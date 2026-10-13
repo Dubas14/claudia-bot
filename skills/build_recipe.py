@@ -37,12 +37,12 @@ ROOT = SKILLS_DIR.parent
 DIST = SKILLS_DIR / "dist" / "recipe.json"
 
 # the Grok side: sign-ins and delegation only (Opus on the box is the production)
-ORDER = ["claudia-setup", "claudia-relay", "grok-imagine", "setup-accounts", "setup-agents", "setup-gpu",
-         "claudia-toolkit"]
+ORDER = ["claudia-welcome", "claudia-setup", "claudia-relay", "grok-imagine", "setup-accounts", "setup-agents",
+         "setup-gpu", "claudia-toolkit"]
 # stage guides kept in the repository for the production (Opus reads them); not part of the Grok Bot template
 PRODUCTION = ["mv-quick", "mv-studio", "mv-director", "song", "taste", "storyboard", "plates", "clips",
               "render-and-review", "browser-assist"]
-GETTING_STARTED = "claudia-setup"
+GETTING_STARTED = "claudia-welcome"
 PROFILE_NAME = "Claudia"
 PLUGIN_PLACEHOLDER = "<TBD-HIGGSFIELD-PLUGIN-ID>"
 # recorded on a Grok Bot account (research notes 00, "Later checks"); confirm once with SearchPlugins before publishing

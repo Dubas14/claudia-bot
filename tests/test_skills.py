@@ -73,11 +73,11 @@ def test_recipe_matches_the_template_schema(built):
     recipe, _, _ = built
     assert set(recipe) == {"profile", "memory", "skills", "routines", "plugins", "gettingStarted"}
     assert recipe["profile"]["name"] == "Claudia" and recipe["profile"]["description"].strip()
-    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 7
+    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 8
     for s in recipe["skills"]:
         assert set(s) == {"name", "description", "content"} and all(s.values())
         assert s["content"] == read(SKILLS / s["name"] / "SKILL.md")           # the whole file, front matter included
-    assert recipe["gettingStarted"] == {"skill": "claudia-setup"}
+    assert recipe["gettingStarted"] == {"skill": "claudia-welcome"}
     assert recipe["memory"] and all(m["kind"] == "log" and m["content"] for m in recipe["memory"])
     assert recipe["routines"] == [], "no routine: the Grok side only relays"
     assert not set(BR.ORDER) & set(BR.PRODUCTION), "stage guides for the production stay out of the template"
@@ -207,7 +207,8 @@ def test_setup_self_checks_pins_and_installs():
     assert "/workspace/claudia/bin/slop" in setup and "/workspace/.claudia/bin/slop" in read(SKILLS / "profile.md")
     assert ENV_LINE in read(SKILLS / "claudia-toolkit" / "SKILL.md"), "the repair after a computer update"
     assert "bash /workspace/claudia/bin/setup.sh --check --json" in setup
-    line = next(ln for ln in setup.splitlines() if "/home/box/sand-data/workflows" in ln)
+    welcome = read(SKILLS / "claudia-welcome" / "SKILL.md")
+    line = next(ln for ln in welcome.splitlines() if "/home/box/sand-data/workflows" in ln)
     assert all(s in line for s in BR.ORDER) and f"all {len(BR.ORDER)}" in line, "the import self-check lists every skill"
 
 
@@ -352,7 +353,7 @@ ALL_COMMANDS = [(p.relative_to(SKILLS).as_posix(), c) for p in SOURCES for c in 
 def test_the_skills_name_many_commands():
     assert len(ALL_COMMANDS) > 60, len(ALL_COMMANDS)
     per_skill = {p: sum(1 for q, _ in ALL_COMMANDS if q == p) for p, _ in ALL_COMMANDS}
-    assert all(per_skill.get(f"{s}/SKILL.md", 0) >= 3 for s in BR.ORDER), per_skill
+    assert all(per_skill.get(f"{s}/SKILL.md", 0) >= 3 for s in BR.ORDER if s != "claudia-welcome"), per_skill
 
 
 def test_every_slop_command_parses_with_the_real_router():
@@ -458,7 +459,7 @@ def test_every_referenced_doc_and_section_exists(path):
 
 def test_the_skills_point_to_docs():
     for s in BR.ORDER:
-        if s in ("claudia-setup",):
+        if s in ("claudia-welcome", "claudia-setup"):
             continue
         refs = [d for d, _ in doc_refs(read(SKILLS / s / "SKILL.md")) if d.endswith(".md")]
         assert refs, f"{s} names no doc to read before acting"

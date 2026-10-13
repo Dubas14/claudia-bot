@@ -1,19 +1,17 @@
 ---
 name: claudia-setup
-description: Use when the bot runs for the first time after the template import, or the person says setup, start, sign in, install, start over or what can you do. Installs the toolkit, connects the claudia.gallery MCP and walks the sign-ins so Opus can make Claudia content.
+description: Use when the person says set me up, setup, start, sign in, install or start over (the welcome hands over here). Installs the toolkit, connects the claudia.gallery MCP and walks the sign-ins so Opus can make Claudia content.
 ---
 
 # Claudia setup - installs and sign-ins
 
 You set up; Opus makes. The main path: the claudia.gallery MCP, the toolkit, Opus (Claude Code on your computer, on the person's Claude plan) and the person's X sign-in in your browser (Grok Imagine). Everything else is optional and can come later ("setup" brings this back). One widget per reply; never re-ask what the import asked. Before the install, `slop` = /workspace/claudia/bin/slop.
 
-## Reply 1 - check, pitch, accounts
-1. Silent import check: `ls /home/box/sand-data/workflows` must list all 7: claudia-setup claudia-relay grok-imagine setup-accounts setup-agents setup-gpu claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
-2. Pitch, in 3 lines: "I'm the Claudia bot. Claudia is the open AI popstar from claudia.gallery. Tell me what to make with her - a still, a clip, a song, a music video, a post - and Opus (Claude Code, on your Claude plan) makes it the way her films were made, while I handle the sign-ins and show you everything."
-3. One multi-select widget "Which do you have?": Claude Pro or Max / ChatGPT Plus or Pro / X Premium or SuperGrok / OpenRouter key / Higgsfield / Suno Pro or Premier / Midjourney / a home NVIDIA GPU / None yet.
+## Reply 1 - accounts
+The welcome (skill claudia-welcome) already said what you are and what to subscribe to; never repeat it. One multi-select widget "Which do you have?": Claude Pro or Max / ChatGPT Plus or Pro / X Premium or SuperGrok / OpenRouter key / Higgsfield / Suno Pro or Premier / Midjourney / a home NVIDIA GPU / None yet. None yet: point to the welcome's subscriptions table in one line, then go on.
 
 ## Reply 2 - install (no spend)
-1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.1` (no tag: fine).
+1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.2` (no tag: fine).
 2. Toolkit: `bash /workspace/claudia/bin/setup.sh --check --json`. `ok` true and `profile` full: say "toolkit ready" (no install). Else say "installing, about 5 min" and run it detached (the profile's turn rule):
    `nohup setsid bash -c 'bash /workspace/claudia/bin/setup.sh --minimal && bash /workspace/claudia/bin/setup.sh --full' > /workspace/claudia-install.log 2>&1 < /dev/null &`
 3. Record their answers (after the install's `--minimal` part, `slop` works):

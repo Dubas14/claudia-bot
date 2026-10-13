@@ -183,8 +183,8 @@ def test_setup_probes_the_toolkit_before_announcing_an_install():
     step = line_with(r2, probe)
     assert '"toolkit ready"' in step and "(no install)" in step and "`profile` full" in step
     assert "15-25" not in setup and "installing, about 5 min" in step
-    pitch = line_with(setup, "2. Pitch")
-    assert "5 min" not in pitch, "the pitch never promises an install"
+    welcome = read(SKILL["claudia-welcome"])
+    assert "5 min" not in welcome[:welcome.index("**My skills**")], "the welcome never promises an install time"
     sh = read(ROOT / "bin" / "setup.sh")
     assert '"profile": prof' in sh and '"ok": not miss' in sh, "the fields the probe reads"
 
