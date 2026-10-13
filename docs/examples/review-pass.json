@@ -1,0 +1,48 @@
+{
+ "_note": "A real reviewer result (SP, chapter 02, refit round 2) — the only chapter that reached the numeric bar. Verbatim except: the first score field is shown as 'director' and the owner's name is replaced by the pseudonym; 6 of its 12 fixes shown. WHY it is a good review: it passed AND still lists concrete, timed fixes (orange budget, lyric not the biggest type, a snap 70 ms early, one ugly occlusion frame), each with the exact change.",
+ "chapter": "02",
+ "round": 2,
+ "director": 8,
+ "craft": 8,
+ "sync": 8,
+ "story": 8,
+ "pass": true,
+ "fixes": [
+  {
+   "shot": "s016",
+   "time": 25.565,
+   "problem": "On the real hit it cuts from W05 to the bed-alone still, so she is gone from the bed for the rest of the shot. She is at his ear for only about 1.1 s in the whole chapter (0.6 s here plus 0.46 s in s017). That works against anabology's footage note that he should interact with her and she should be moving. The storyboard provides ghost-lying as a separate layer for exactly this case.",
+   "fix": "Keep the bed-alone plate for the cable, and screen-blend the ghost-lying plate (on pure black, 2400 px, with matte and depth) onto the glowing empty pillow beside his head, with her lips at his ear and the same 2.5D parallax. A slow drift toward him (for example 3–5% over the 0.4 s) keeps her moving. Tuck the end of 'sleep.' behind her glow, as in the pre-hit layout."
+  },
+  {
+   "shot": "s012–s015",
+   "time": 19.3,
+   "problem": "Orange budget. On 'slow it down' there are five orange elements: the sung word, '= SLOW AI DOWN', the dial arc and needle, the '0.185×' readout, and the duet's vocal waveform. s013 has four: 'right.', the quote-chain arrow, AGREES and the waveform. The waveform turns orange on every sung word through the whole feed, so it doubles the lyric's karaoke orange. DESIGN §2 allows two.",
+   "fix": "Keep the duet waveform white at all times, since the caption's sung word already carries the orange. Set the tempo readout in white and keep only the needle and arc orange. In s013, make AGREES white, or keep it orange and make the arrow white."
+  },
+  {
+   "shot": "s018",
+   "time": 28.6,
+   "problem": "From 28.44 to 30.2 the lyric row ('and Matt Damon's…', 64 px at the foot) is the smallest type block in the frame. THE ODYSSEY at 96 px dominates, and at 28.44–28.62 so does the 150 px P(DOOM)'S AT 10% handover. DESIGN §4 says the lyric is the biggest type unless a device is the line.",
+   "fix": "During the post phase, cut THE ODYSSEY to a Plex kicker plus a DINish line of about 48–56 px. Alternatively, set line 5 as an LY.cover (84–90 px) in the left column while the card is small, then drop it to the 64 px foot row on the full-bleed snap at 30.203, which is itself a beat-synced move."
+  },
+  {
+   "shot": "s019",
+   "time": 35.3,
+   "problem": "The replies column scrolls up under the chrome. The meme reply 'What Odysseus actually heard during the Siren song:' runs into the 'BAR 019' pips, and the reply's avatar and name are cut off at the top edge of the frame.",
+   "fix": "Clip the replies column at y ≥ 110 with a short fade at the top (or give it a black band under the chrome, as the s012 tab bar has). Another option is to cap the scroll so the meme reply's header never rises above y 110."
+  },
+  {
+   "shot": "s016",
+   "time": 25.542,
+   "problem": "On the only pre-hit frame of 'sleep.', the word enters almost entirely behind her glow and in dark ink. The 'n' of 'don't' is also cut by her hair matte, so the frame reads 'You dor't / s…'. After the hit the line is clean, so this is a single ugly frame on the most important word.",
+   "fix": "Either move the pre-hit cover left or up (for example x 600, y 170) so that only the apostrophe and t of 'don't' tuck behind her, or turn off occlusion for the row that is entering. A third option is to hold 'sleep.' for the post-hit layout: it enters at 25.52 and the cut is at 25.565, only 45 ms later. That still meets the N/N token check, because the kit marks the token."
+  },
+  {
+   "shot": "s015",
+   "time": 23.16,
+   "problem": "The third feed snap (into the Pope's block) is keyed at 23.16, so it arrives about 70 ms before the kick at 23.232. The first two snaps arrive on their kicks (19.981 and 21.85), so this one reads slightly early.",
+   "fix": "Set SNAPS[2] to 23.232. 'The' at 23.12 then enters low in the frame and rises with the block, as 'Trump' does."
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+# The toolkit runs on Linux (the Grok Bot computer): every text file is stored and checked out with LF endings, even
+# when the repo is edited on Windows (shell scripts and the CLI shim break on CRLF). Media and fonts are binary.
+* text=auto eol=lf
+
+# shell entry points: always text, always LF (they have no extension for auto-detection to go by)
+bin/slop text eol=lf
+bin/setup.sh text eol=lf
+*.sh text eol=lf
+
+# binary: never converted, never diffed as text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.mp4 binary
+*.mov binary
+*.npz binary
+*.npy binary
+*.pdf binary
+*.zip binary
+*.gz binary

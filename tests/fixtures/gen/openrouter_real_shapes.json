@@ -1,0 +1,28 @@
+{
+ "_source": "Real OpenRouter /api/v1/videos and /images responses recorded from the paid probes of 2026-10-01 (e2e probes). Job ids are replaced by fixture ids; every other key, value and cost is as returned.",
+ "videos_submit_response": {
+  "id": "gen-vid-fixture-0001",
+  "polling_url": "https://openrouter.ai/api/v1/videos/gen-vid-fixture-0001",
+  "status": "pending"
+ },
+ "videos_poll_completed": {
+  "id": "gen-vid-fixture-0001",
+  "generation_id": "gen-vid-fixture-0001",
+  "polling_url": "https://openrouter.ai/api/v1/videos/gen-vid-fixture-0001",
+  "status": "completed",
+  "unsigned_urls": ["https://openrouter.ai/api/v1/videos/gen-vid-fixture-0001/content?index=0"],
+  "usage": {"cost": 0.177233, "is_byok": false}
+ },
+ "audio_data_uri_rejected": {
+  "http": 400,
+  "message": "Invalid reference URL: input_references[0].audio_url.url: Only HTTPS URLs are allowed"
+ },
+ "job_failed_sensitive_text": "output audio may contain sensitive information",
+ "billed": [
+  {"model": "bytedance/seedance-2.0-mini", "resolution": "480p", "duration": 4, "mode": "first_frame", "usd": 0.142079},
+  {"model": "bytedance/seedance-2.0-mini", "resolution": "480p", "duration": 5, "mode": "first_frame (the reference-mode take billed the same, $0.177)", "usd": 0.177233},
+  {"model": "bytedance/seedance-2.5", "resolution": "480p", "duration": 5, "mode": "first_frame", "usd": 0.5182759},
+  {"model": "openai/gpt-image-2", "quality": "low", "aspect_ratio": "16:9", "size": [1536, 864], "usd": 0.004}
+ ],
+ "seedance_2_0_mini_480p_output": {"width": 864, "height": 496, "fps": 24, "video_s": 4.04, "audio_s": 4.10}
+}

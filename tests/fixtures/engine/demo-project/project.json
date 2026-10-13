@@ -1,0 +1,46 @@
+{
+ "name": "demo-project",
+ "title": "Demo Project",
+ "tier": "quick",
+ "song": "audio/song.wav",
+ "fps": 24,
+ "size": [
+  1920,
+  1080
+ ],
+ "lead": {
+  "canon": "a synthetic dark disc",
+  "far": "a dark disc",
+  "possessive": "the disc's",
+  "label": "subject"
+ },
+ "look": {
+  "mode": "native",
+  "accent": "#D97757",
+  "fonts": {
+   "lyric": "Space Grotesk",
+   "micro": "IBM Plex Mono",
+   "display": "Barlow Condensed"
+  },
+  "hero_plate": null
+ },
+ "chrome": {
+  "style": "minimal",
+  "corner": "DEMO PROJECT"
+ },
+ "mj": {
+  "params": "--ar 16:9 --v 8.2 --raw --hd",
+  "profile": ""
+ },
+ "models": {},
+ "budget": {
+  "openrouter_usd": 0,
+  "higgsfield_credits": 0,
+  "confirm_over_usd": 2
+ },
+ "gates": {
+  "board_approved": true,
+  "prompts_approved": false,
+  "v1_approved": false
+ }
+}

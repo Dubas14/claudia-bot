@@ -1,0 +1,439 @@
+{
+ "version": 2,
+ "duration": 306.4,
+ "_about": "Excerpts from the two reference storyboards, rewritten into this toolkit's board/shots.json contract (ARCHITECTURE.md §4.5). Times, words, prompts and the explaining ideas are the originals; device kinds and params are the engine's (engine/src/devices, catalogue in engine/DEVICES.md); treatments use the engine's family names. Each shot's notes start with WHY. EV shots are s001-s045 (EV timeline); the SP shots s025-sp and s047-sp come from a different song and timeline and are included only as field examples. Anchors are what a toolkit project has (docs/70-motion-design.md 5.0): uv boxes and keyed uv tracks in image space, measured by eye on the plate or take, plus screen rects and free slots; the toolkit detects no boxes, so {\"box\": …} and \"lead\" anchors would resolve to nothing unless boxes are written by hand in engine/common.js. The anchor numbers here are illustrative.",
+ "chapters": [
+  {
+   "id": "C0",
+   "name": "ARRIVAL",
+   "t0": 0.0,
+   "t1": 18.96,
+   "sections": [
+    "intro"
+   ],
+   "grade": "night: blue-black, one warm lamp",
+   "accent": "#D97757",
+   "screen": "grain",
+   "set": "robotaxi on the freeway, the datacenter"
+  },
+  {
+   "id": "C2",
+   "name": "THE BOARD",
+   "t0": 74.12,
+   "t1": 110.42,
+   "sections": [
+    "pre-chorus 1",
+    "chorus 1"
+   ],
+   "grade": "night to first light; board light becomes the accent",
+   "accent": "#D97757",
+   "screen": "line",
+   "set": "the split-flap hall"
+  }
+ ],
+ "shots": [
+  {
+   "id": "s001",
+   "t0": 0.0,
+   "t1": 2.1113,
+   "section": "intro",
+   "lines": [],
+   "set": "robotaxi back seat, freeway at night",
+   "lead_on_screen": true,
+   "framing": "CU",
+   "action": "Frame 1 is her face in the dark back seat of the robotaxi, eyes closed; no black frames. A red lamp slides across her face left to right and lights the clay streak and the spark clip. On the song's first hit (1.12) her eyes open straight into the lens and stay there. A full-width split-flap row across the lower third clatters from frame 1 and locks on the 1.20 beat.",
+   "camera": "locked, very slow push in (3%)",
+   "motion_tier": "motion",
+   "plate": "waymo-cu",
+   "clip": "SD01",
+   "mj_prompt": "close-up of a young Caucasian American woman with pale skin and light freckles, a glossy black blunt jaw-length bob with heavy bangs and one clay-orange streak through the bangs, a small flat clay-orange eight-pointed star hair clip, a thin headset microphone, sitting upright alone in the back seat of a driverless robotaxi at night, her face in the centre of the frame, eyes closed, a single red lamp sliding across one cheek through the side window, dark leather seat, the lower third of the frame dark and empty, blue-black night, fog, one small red lamp as the only warm note, fine silver-gelatin grain, cinematic 35mm film still, no text, no letters, no logos",
+   "type": [],
+   "devices": [
+    {
+     "kind": "flap",
+     "anchor": {
+      "rect": [
+       72,
+       792,
+       1752,
+       88
+      ]
+     },
+     "key": "B",
+     "at": 0.0,
+     "params": {
+      "rows": [
+       {
+        "text": "18 MONTHS TO ESCAPE THE PERMANENT UNDERCLASS",
+        "prev": ""
+       }
+      ],
+      "cw": 38,
+      "ch": 88,
+      "label": "DEPARTURES"
+     }
+    },
+    {
+     "kind": "cv.bracket",
+     "anchor": {
+      "uv": [
+       0.36,
+       0.16,
+       0.26,
+       0.52
+      ]
+     },
+     "key": "B",
+     "params": {
+      "label": "FACE · MODEL 01",
+      "conf": 0.99
+     }
+    },
+    {
+     "kind": "gauge",
+     "anchor": {
+      "uv": [
+       0.36,
+       0.16,
+       0.26,
+       0.52
+      ]
+     },
+     "key": "B",
+     "at": 1.199,
+     "params": {
+      "style": "tag",
+      "label": "EXPRESSION · WORRY",
+      "value": 0.02,
+      "max": 1,
+      "mark": 0.5,
+      "done": "THRESHOLD · WORRY > 0.50 · NOT MET"
+     }
+    }
+   ],
+   "treatment": null,
+   "transition_in": "cut",
+   "chrome": "BOARD full-width across the lower third, cap 4.5% of frame height: 18 MONTHS TO ESCAPE THE PERMANENT UNDERCLASS (clatters from frame 1, locks on 1.20)",
+   "accent": "#D97757",
+   "notes": "WHY: the hook. One-second test: the frame at 1.0 s shows her face, the streak and a readable board line on a muted phone. The explaining device is a deadpan expression meter under the year's most-quoted threat; the through-line board is planted in frame 1."
+  },
+  {
+   "id": "s025",
+   "t0": 44.0541,
+   "t1": 47.2468,
+   "section": "verse 1",
+   "lines": [
+    7
+   ],
+   "set": "data hall catwalk",
+   "lead_on_screen": true,
+   "framing": "CU",
+   "action": "Under the brim she stares into the lens while the weekly-limit bars draw on the beat: 150 falls to 125, +25% is struck through, and = −17% lands in the accent.",
+   "camera": "slow pull back",
+   "motion_tier": "plate3d",
+   "plate": "dadcap-cu",
+   "clip": null,
+   "mj_prompt": "close-up of a young Caucasian American woman with pale skin and light freckles, a glossy black blunt jaw-length bob with heavy bangs and one clay-orange streak through the bangs, a small flat clay-orange eight-pointed star hair clip, a thin headset microphone, wearing a washed black baseball dad cap with a blank embroidered front panel, the brim low over her eyes, standing in the left half of the frame, deadpan, the right half empty darkness, blue-black night, fog, one small red lamp as the only warm note, fine silver-gelatin grain, cinematic 35mm film still, no text, no letters, no logos",
+   "type": [
+    {
+     "line": 7,
+     "mode": "masthead",
+     "text": "+25% / = / −17%",
+     "placement": "right half, one token per beat"
+    }
+   ],
+   "devices": [
+    {
+     "kind": "sheet",
+     "anchor": {
+      "slot": "right"
+     },
+     "key": "W",
+     "params": {
+      "title": "WEEKLY LIMIT",
+      "rows": [
+       [
+        "BEFORE",
+        "150"
+       ],
+       [
+        "AFTER",
+        "125",
+        "hot"
+       ],
+       [
+        "+25%",
+        "STRUCK"
+       ],
+       [
+        "FOOTNOTE",
+        "TEMPORARY 50% BOOST ENDED"
+       ]
+      ]
+     }
+    }
+   ],
+   "treatment": "diagram",
+   "transition_in": "cut",
+   "chrome": "BARS (code): WEEKLY LIMIT 150 → 125 · +25% (struck) = −17%",
+   "accent": "#D97757",
+   "notes": "WHY: the display tokens are the joke (the sung 'Plus twenty-five is minus seventeen' reads as +25% = −17%), and the chart is the meaning of the line, drawn in the plate's declared empty right half."
+  },
+  {
+   "id": "s045",
+   "t0": 80.9273,
+   "t1": 84.1201,
+   "section": "chorus 1",
+   "lines": [
+    17
+   ],
+   "set": "the split-flap hall catwalk",
+   "lead_on_screen": true,
+   "framing": "FS",
+   "action": "The hero walk: she comes down the catwalk toward camera singing, the board's flaps strobing on the kick and bands of clay light crossing the floor.",
+   "camera": "tracking back (in the clip)",
+   "motion_tier": "sung",
+   "plate": "hero-walk",
+   "clip": "SD07",
+   "mj_prompt": "full-length shot of a young Caucasian American woman with pale skin and light freckles, a glossy black blunt jaw-length bob with heavy bangs and one clay-orange streak through the bangs, a small flat clay-orange eight-pointed star hair clip, a thin headset microphone, a white cropped puff-sleeve shirt, a black pleated skirt with a harness belt and a hanging white garment tag, black knee boots, walking hard toward the camera down the centre of a narrow wet catwalk in a vast hall, a colossal split-flap board filling the wall behind her, bands of warm light from the flaps across the floor, symmetrical, singing, the upper third the board, blue-black night turning to first light, warm clay-orange light spilling from the giant board as the only colour, fine grain, cinematic 35mm film still, no text, no letters, no logos",
+   "type": [
+    {
+     "line": 17,
+     "mode": "subtitle",
+     "text": "18 months to escape the underclass",
+     "placement": "bottom baseline, karaoke fill in the accent"
+    },
+    {
+     "line": 17,
+     "mode": "masthead",
+     "text": "UNDERCLASS",
+     "placement": "upper third over the board, on 83.08"
+    }
+   ],
+   "devices": [
+    {
+     "kind": "cv.bracket",
+     "anchor": {
+      "keys": [
+       [
+        80.93,
+        0.46,
+        0.2,
+        0.09,
+        0.46
+       ],
+       [
+        84.12,
+        0.41,
+        0.06,
+        0.18,
+        0.92
+       ]
+      ]
+     },
+     "key": "B",
+     "params": {
+      "label": "MODEL 01 · LOOK 06",
+      "conf": 0.97
+     }
+    }
+   ],
+   "treatment": null,
+   "transition_in": "cut",
+   "chrome": "BOARD 18 · LOOK 06/11 · CV brackets track her walk · timecode at song tempo",
+   "accent": "#D97757",
+   "notes": "WHY: a sung window on a walk toward camera (what the video model does best); the sung line as a subtitle plus one payoff word as a masthead over a quiet patch (the board)."
+  },
+  {
+   "id": "s025-sp",
+   "t0": 43.1,
+   "t1": 44.8,
+   "section": "chorus 1 (SP)",
+   "lines": [
+    9
+   ],
+   "set": "the rock at dusk; the galley's mast",
+   "lead_on_screen": true,
+   "framing": "MCU",
+   "action": "Her voice alone sings the first shout. Pictogram 1 flashes full-frame; the beat is full now. Her on the rock at dusk, singing it with all her voice; then, on the eighths, the crew carry out the order: the man backs against the mast and two rowers whip the rope round him: rope, hands, knot, his face. The lyric itself wraps round the mast like a second rope, behind the mast on the far side, in front of him on the near side.",
+   "camera": "her held; then handheld, cut on eighths",
+   "motion_tier": "sung",
+   "plate": "siren-shout",
+   "clip": "W06b",
+   "mj_prompt": null,
+   "type": [
+    {
+     "line": 9,
+     "mode": "mass",
+     "text": "TIE ME TO THE MAST!",
+     "placement": "a helix of type around the mast, its back half behind the matte"
+    }
+   ],
+   "devices": [
+    {
+     "kind": "flash",
+     "anchor": {
+      "rect": [
+       0,
+       0,
+       1920,
+       1080
+      ]
+     },
+     "key": "H",
+     "params": {
+      "kind": "card",
+      "sign": "mandatory",
+      "glyph": "MAST",
+      "caption": "TIE HIM TO THE MAST",
+      "number": 1,
+      "of": 4,
+      "label": "SAFETY CARD"
+     }
+    }
+   ],
+   "treatment": null,
+   "transition_in": "cut",
+   "chrome": "title + section top left; bar number and beat pips top right",
+   "accent": "#D97757",
+   "notes": "WHY: the device IS the line (a safety pictogram on a shouted order, one frame-burst on the hit, a flash in theme), and the crew obey the order on the eighths. The rope of type wound round the mast is bespoke chapter code (a 3D-rendered type helix behind the matte, with a code fallback), not a data device. The user's note: her voice alone sings the first and third shouts of each chorus, the crowd the second."
+  },
+  {
+   "id": "s047-sp",
+   "t0": 91.02,
+   "t1": 92.72,
+   "section": "chorus 2 (SP)",
+   "lines": [
+    24
+   ],
+   "set": "the strait between lit cliffs",
+   "lead_on_screen": true,
+   "framing": "WS",
+   "action": "Black and white: rowers leap from both rails, silhouetted against the lit cliffs, on the beats; cut in, her voice's source: her in an alcove above, leaning out, singing it with all her voice. The man strains against the rope.",
+   "camera": "cuts on beats; impact on the hit at 92.04",
+   "motion_tier": "sung",
+   "plate": "jumpers",
+   "clip": "W10b",
+   "mj_prompt": null,
+   "type": [
+    {
+     "line": 24,
+     "mode": "masthead",
+     "text": "TIE ME TO THE MAST!",
+     "placement": "left axis, accumulate, block flash on each word"
+    }
+   ],
+   "devices": [
+    {
+     "kind": "gauge",
+     "anchor": {
+      "uv": [
+       0.62,
+       0.6
+      ]
+     },
+     "key": "F",
+     "params": {
+      "style": "tag",
+      "label": "LOAD · AT THE MAST",
+      "unit": "kN",
+      "max": 20,
+      "mark": 9.8,
+      "warn": 5,
+      "red": 9,
+      "keys": [
+       [
+        52.1,
+        2.1
+       ],
+       [
+        92.3,
+        3.8
+       ],
+       [
+        101.6,
+        5.2
+       ]
+      ]
+     }
+    },
+    {
+     "kind": "cv.tag",
+     "anchor": {
+      "uv": [
+       0.66,
+       0.5
+      ]
+     },
+     "key": "H",
+     "params": {
+      "rows": [
+       "SOURCE · HER VOICE",
+       "ALCOVE 0212 · 40 M UP"
+      ],
+      "fast": true
+     }
+    }
+   ],
+   "treatment": null,
+   "transition_in": "cut",
+   "chrome": "standard",
+   "accent": "#D97757",
+   "notes": "WHY: a through-line readout escalates (the load on the rope 2.1 → 3.8 kN on this hit); one hero device + ≤ 2 CV marks (the SP element budget)."
+  }
+ ],
+ "seedance": [
+  {
+   "clip": "SD01",
+   "kind": "motion",
+   "duration": 6,
+   "plate": "waymo-cu",
+   "shots": [
+    "s001"
+   ],
+   "song_t0": 0.0,
+   "words": "",
+   "sing": false,
+   "prompt": "The scene from @Image1, moving in time with @Audio1. Close-up. The woman from @Image1 sits still in the back seat of the moving car at night, eyes closed. A red light slides slowly across her face from left to right. At one second she opens her eyes and looks straight into the lens. At four seconds she turns her head slowly to the side window as a white light sweeps across the glass and her face. The car rocks slightly. Locked camera, very slow push in. No cuts. Her mouth stays closed, face expressionless."
+  },
+  {
+   "clip": "SD07",
+   "kind": "sung",
+   "duration": 5,
+   "plate": "hero-walk",
+   "shots": [
+    "s045"
+   ],
+   "song_t0": 80.44,
+   "words": "Eighteen months to escape the underclass. Lock in,",
+   "sing": true,
+   "prompt": "@Image1 sings @Audio1. She lip-syncs to @Audio1 exactly, every word in time: \"Eighteen months to escape the underclass. Lock in,\". Full-length shot. The woman from @Image1 walks toward the camera down the middle of the huge hall, singing, with a confident model's walk; the flaps on the giant board behind her flicker in waves and bands of warm light cross the floor. Her skirt swings. The camera moves back at her walking speed so she ends at waist height. No cuts."
+  }
+ ],
+ "plates": [
+  {
+   "plate": "waymo-cu",
+   "set": "robotaxi back seat",
+   "aspect": "16:9",
+   "used_by": [
+    "s001"
+   ]
+  },
+  {
+   "plate": "dadcap-cu",
+   "set": "data hall catwalk",
+   "aspect": "16:9",
+   "used_by": [
+    "s025"
+   ]
+  },
+  {
+   "plate": "hero-walk",
+   "set": "the split-flap hall catwalk",
+   "aspect": "16:9",
+   "used_by": [
+    "s045"
+   ]
+  }
+ ]
+}

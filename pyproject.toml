@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claudia"
+version = "0.2.0"
+description = "Claudia: song idea -> finished lyric music video. CLI toolkit behind the Claudia Grok Bot template."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "anabology" }]
+keywords = ["music video", "lyric video", "grok bot", "seedance", "kinetic typography"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: POSIX :: Linux",
+  "Environment :: Console",
+  "Topic :: Multimedia :: Video",
+]
+# bin/setup.sh is the supported installer: it installs exact pins (torch pinned on every line) and then this
+# package EDITABLE with --no-deps. These lists document the profiles for `pip install -e .[full]` users.
+# EDITABLE ONLY: only the `slop` package is packaged; templates/ and engine/ are read from the checkout
+# (config.toolkit_root()), so a plain `pip install .` / pipx install cannot scaffold projects or render.
+# On Linux, take torch from the CPU index (https://download.pytorch.org/whl/cpu) or PyPI pulls CUDA wheels.
+dependencies = [
+  "numpy>=1.26",
+  "pillow>=10",
+  "requests>=2.31",
+  "soundfile>=0.12",
+  "scipy>=1.11",
+  "playwright==1.60.0",
+]
+
+[project.optional-dependencies]
+full = [
+  "torch==2.11.0",
+  "torchaudio==2.11.0",
+  "torchvision==0.26.0",
+  "demucs==4.1.0",
+  "transformers==5.17.*",
+  "librosa==1.0.0",
+  "opencv-python-headless",
+  "safetensors",
+  "accelerate",
+  "wordfreq>=3.1,<4",
+]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/anabologyco-maker/claudia-bot"
+Repository = "https://github.com/anabologyco-maker/claudia-bot"
+
+[project.scripts]
+slop = "slop.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["slop", "slop.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "slow: takes longer than ~60 s or downloads/installs things (deselect with -m 'not slow')",
+]

@@ -1,0 +1,3 @@
+[lyrics.txt: the words AS SUNG, one lyric line per line; numbers and symbols spelled out ("plus twenty five percent", "A G I")]
+[Lines starting with "[" are ignored: section tags like [Verse 1] or [Chorus], and these notes. Full rules: lyrics/README.md]
+[Replace these notes with the song's lyrics, then check them: slop lyrics lint]

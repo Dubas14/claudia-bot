@@ -1,0 +1,25 @@
+{
+ "grad-a": {
+  "file": "plates/grad-a.jpg",
+  "cand_k": 1,
+  "shot_ids": [
+   "s001"
+  ]
+ },
+ "grad-b": {
+  "file": "plates/grad-b.jpg",
+  "cand_k": 1,
+  "shot_ids": [
+   "s002"
+  ],
+  "depth": "plates/grad-b.depth.png",
+  "depth_model": "depth-anything/Depth-Anything-V2-Small-hf"
+ },
+ "grad-c": {
+  "file": "plates/grad-c.jpg",
+  "cand_k": 1,
+  "shot_ids": [
+   "s003"
+  ]
+ }
+}

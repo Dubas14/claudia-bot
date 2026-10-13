@@ -1,0 +1,66 @@
+{
+ "_note": "The failing review of review-fail.json rewritten into the toolkit's reviewer schema (templates/workflows/chapters.js; 80-review-qa.md §8.2): 'director' becomes 'owner', every fix gets a severity, and 'checks' records what the reviewer actually ran. WHY: the script, not the reviewer, decides the verdict — one blocking fix (a canon break: the crew copy the lead man) fails the chapter even though every score clears the floors; the five polish fixes are carried into the next pass. The checks values are illustrative (the original record has none).",
+ "owner": 7,
+ "craft": 7,
+ "sync": 8.5,
+ "story": 6.5,
+ "pass": false,
+ "fixes": [
+  {
+   "shot": "s010/s011",
+   "time": 15.82,
+   "severity": "blocking",
+   "problem": "Story canon is broken. In the new take M-s010-t2 (bow view), the rowers either side of him are shaved-head, bearded, muscular men in black T-shirts: they look like copies of him. None of them has a visible orange earplug. This runs through the whole Chad part of s010 (15.82–16.28), the s011 wide (16.29) and the x2 face snap (17.21–17.68), where six or more of these clones fill the frame. anabology's storyboard note: 'the crew must not look like him'. The 'EVERY EAR PLUGGED BUT ONE' tag says something the picture contradicts.",
+   "fix": "Retake M-s010 so the crew is mixed (grey-bearded, long-haired, red-bearded, in linen tunics, orange plugs visible) and he is the only shaved head in black. Until it lands, crop the Chad frames so the crew is out of shot (x2 face snap: cx .49, zoom ~2.6 on his head and phone). Play the s011 wide from the plate chad-mast-phone, whose crew was prompted to differ from him, and put the crew tag on the old M-s010-b take instead."
+  },
+  {
+   "shot": "s001",
+   "time": 3.2,
+   "severity": "polish",
+   "problem": "The pupil never fills the frame with black. The x1.83 ride pushes past the pupil into the reflection, so the last 0.3 s is a dark blue frame with two blown white lights. They read as car headlights or animal eyes, not a ship. The match cut 'pupil = the gap in the clouds' is lost: the cloud hole at 3.32 matches nothing in the outgoing frame.",
+   "fix": "Stop the ride where the dark round pupil and the iris ring still read, around zoom 1.4–1.5, with the pupil centred at the TR.through point a. Cut there so the round black pupil matches the round cloud hole in size and position. Or end the take earlier, before the reflection's highlight blows out, and let TR.through supply the final push."
+  },
+  {
+   "shot": "s005",
+   "time": 10.3,
+   "severity": "polish",
+   "problem": "No rotoscope is visible on the hero lyric. WHY/WOULD/I/DECEIVE/YOU? stops about 10 px short of her hair (DECEIVE ends at x≈640, the hair begins at ≈650), so nothing tucks behind her. This is the chapter's one lyric stack, and anabology asked for rotoscopes that cover text.",
+   "fix": "Move the column right or widen it (x 196→250, or fit 460→520) so the right ends of WOULD and DECEIVE run 40–80 px under her hair strands through the matte. Keep YOU? tucking under the left ruffle. Check a full-size still at 10.3 to confirm the letters are cut by hair."
+  },
+  {
+   "shot": "s007",
+   "time": 12.9,
+   "severity": "polish",
+   "problem": "Two numbers on screen disagree: the counter reads x380 while the dashboard reads '135 RUNNING'. It reads as sloppy information design. The frame also carries three devices (counter, dashboard, 2ⁿ plot) and orange on more than two elements (the fresh cells, RUNNING, the plot head, the progress rule).",
+   "fix": "Drive the dashboard's 'lit' from the same value and easing as INST.counter so the two numbers match every frame. Make the dashboard's fresh-cell row light grey or white so orange stays on at most two elements, the counter and the plot head. Consider dropping the plot here, since s006 already drew it."
+  },
+  {
+   "shot": "s004",
+   "time": 8.5,
+   "severity": "polish",
+   "problem": "The frame is busy for a 0.9 s beat: the tracked sign, the tag, a large yellow ISO detail panel (500×278) beside her head, the full-width chat bar and the chrome. The ISO yellow block is the loudest thing on screen in a section meant to be quiet (D0), and it competes with the physical sign it explains.",
+   "fix": "Shrink the enlarged detail to about 360 wide and pull it away from her head to the upper-right sea, or drop the separate panel and scale the tracked sign on the board, pushing the camera to it. Fade the chat bar to about 60% here, since it has already been typed."
+  },
+  {
+   "shot": "s003",
+   "time": 7,
+   "severity": "polish",
+   "problem": "The landing in section I passes a shake ({amp: 2.5, freq: 5}). DESIGN §5 rules section I as 'slow pushes and rides only; no punches, no shake' while D0. The shake answers no sound. It is small, and depending on the drum envelope it may render near zero.",
+   "fix": "Remove the shake. Keep the exponential settle (land) as the landing, and key the take's own wave burst (0.45 s in the take) with a small push if a motion accent is wanted."
+  }
+ ],
+ "checks": {
+  "lyric_gate": "10/10 tokens on screen at their time (4.1s)",
+  "wired": "WIRED C1 01_chapter.js",
+  "sheets": 32,
+  "ms_per_frame": 940,
+  "flash_max_per_s": 2
+ },
+ "_expected_verdict": {
+  "valid": true,
+  "pass": false,
+  "blocking": 1,
+  "polish": 5,
+  "reason": "1 blocking fix(es)"
+ }
+}

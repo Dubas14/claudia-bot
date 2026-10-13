@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Claudia engine</title>
+<style>html,body{margin:0;background:#111}canvas{display:block}#base,#over{display:none}</style>
+</head>
+<body>
+<canvas id="out" width="1920" height="1080"></canvas>
+<canvas id="base" width="1920" height="1080"></canvas>
+<canvas id="over" width="1920" height="1080"></canvas>
+<script>
+// The loader. `slop render` opens engine/index.html?project=<file URL of the project dir>&w=…&h=… and injects
+// window.SLOP = {project, engine, w, h, assets[], layer[], deviceFiles[], data{}} and window.PROJECT before this runs.
+// Opened by hand (?project=… only) it tries every data file in <project>/engine/ and <project>/engine/assets/.
+// Order: project data → engine (fonts manifest, src/*.js) → ENGINE.prepareData() → project layer (common.js, scenes.js,
+// ch/_index.js) → device library → src/shots.js → stub renderer if nothing claimed the shots → window.booted.
+(() => {
+  const S = window.SLOP = window.SLOP || {}, Q = new URLSearchParams(location.search);
+  const slash = u => (u && !u.endsWith('/') ? u + '/' : u);
+  const toURL = p => {
+    if (!p) return '';
+    if (/^(file|https?):/i.test(p)) return p;
+    if (/^[A-Za-z]:[\\/]/.test(p)) return 'file:///' + p.replace(/\\/g, '/');
+    if (p.startsWith('/')) return 'file://' + p;
+    return new URL(p, location.href).href;
+  };
+  S.engine = slash(S.engine || new URL('.', location.href).href);
+  S.project = slash(toURL(S.project || Q.get('project') || ''));
+  S.projectEngine = slash(S.projectEngine || (S.project ? S.project + 'engine/' : S.engine));
+  if (Q.get('w') && !S.w) S.w = +Q.get('w');
+  if (Q.get('h') && !S.h) S.h = +Q.get('h');
+  S.missing = [];
+  // relative media paths (plates, clip frames, mattes, fx sequences, chapter files) resolve against <project>/engine/
+  if (S.project) { const b = document.createElement('base'); b.href = S.projectEngine; document.head.prepend(b); }
+  const esc = u => String(u).replace(/"/g, '%22').replace(/</g, '%3C');
+  const js = (u, tag) => document.write(`<script src="${esc(u)}"${tag ? ` onerror="window.SLOP.missing.push(${JSON.stringify(String(tag)).replace(/"/g, '&quot;')})"` : ''}><\/script>`);
+  const inline = code => document.write(`<script>${code}<\/script>`);
+  const abs = (f, root) => (/^(file|https?|data):/i.test(f) ? f : root + f);
+  // 1. the project's data (window.PROJECT, BEATS, LYR, HITS, SPECTRUM, CLIPS, PLATES, TRACK, FXSEQ, SHOTS, EDL)
+  const names = ['project', 'beats', 'lyrics', 'hits', 'spectrum', 'clips', 'plates', 'tracks', 'fx', 'shots', 'edl'];
+  const assets = Array.isArray(S.assets) ? S.assets : (S.project ? names.flatMap(n => [`${n}.js`, `assets/${n}.js`]) : []);
+  assets.forEach(f => js(abs(f, S.projectEngine), 'asset:' + f));
+  // 2. the engine
+  js(S.engine + 'fonts/fonts.js');
+  ['core', 'post', 'glass', 'plate3d', 'chrome', 'kinetic', 'annot', 'trans', 'media', 'hits', 'occ', 'ink', 'seq', 'timeline']
+    .forEach(n => js(`${S.engine}src/${n}.js`));
+  inline('ENGINE.prepareData();');
+  // 3. the project layer (bespoke code): common.js may define look / chrome / leadKit; else they bind to the engine's
+  const layer = Array.isArray(S.layer) ? S.layer : (S.project ? ['common.js', 'scenes.js', 'ch/_index.js'] : []);
+  const common = layer.filter(f => /(^|\/)common\.js$/.test(f)), rest = layer.filter(f => !/(^|\/)common\.js$/.test(f));
+  common.forEach(f => js(abs(f, S.projectEngine), 'layer:' + f));
+  inline('if (typeof look !== "function") window.look = ENGINE.look; if (typeof chrome !== "function") window.chrome = ENGINE.chrome;'
+    + ' if (typeof leadKit !== "function") window.leadKit = ENGINE.leadKit;');
+  rest.forEach(f => js(abs(f, S.projectEngine), 'layer:' + f));
+  // 4. the data-driven shots renderer (engine-devices; it loads its own device library) — or, when it is absent, the
+  //    device files listed by the renderer (S.deviceFiles) so chapter code can still use them; then the stub renderer
+  const dev = Array.isArray(S.deviceFiles) ? S.deviceFiles : [];
+  dev.forEach(f => js(abs(f, S.engine), 'device:' + f));
+  if (S.shots !== false) js(S.engine + 'src/shots.js', 'shots:src/shots.js');
+  // 5. the probes (core.js installProbes: per-frame layer count in ENGINE.info, chrome / device call counters), then boot
+  inline('if (!ENGINE.shotsRenderer && typeof window.SHOTS_PLAN === "function") ENGINE.shotsRenderer = "src/shots.js";'
+    + ' ENGINE.defaultShots(); if (typeof ENGINE.installProbes === "function") ENGINE.installProbes(); window.booted = ENGINE.boot();');
+})();
+</script>
+</body></html>

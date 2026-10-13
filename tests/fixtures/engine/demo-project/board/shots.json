@@ -1,0 +1,104 @@
+{
+ "version": 1,
+ "duration": 8.0,
+ "chapters": [
+  {
+   "name": "one",
+   "t0": 0.0,
+   "t1": 8.0
+  }
+ ],
+ "shots": [
+  {
+   "id": "s001",
+   "t0": 0.0,
+   "t1": 3.0,
+   "section": "intro",
+   "lines": [
+    0
+   ],
+   "set": "warm field",
+   "lead_on_screen": true,
+   "framing": "MS",
+   "action": "the disc holds still",
+   "camera": "slow push",
+   "motion_tier": "plate3d",
+   "plate": "grad-a",
+   "clip": null,
+   "type": [
+    {
+     "line": 0,
+     "mode": "coverline",
+     "text": "Hello slop world.",
+     "placement": "left"
+    }
+   ],
+   "devices": [],
+   "transition_in": null
+  },
+  {
+   "id": "s002",
+   "t0": 3.0,
+   "t1": 6.0,
+   "section": "verse1",
+   "lines": [
+    1
+   ],
+   "set": "blue field",
+   "lead_on_screen": true,
+   "framing": "CU",
+   "action": "the disc drifts",
+   "camera": "orbit",
+   "motion_tier": "plate3d",
+   "plate": "grad-b",
+   "clip": null,
+   "type": [
+    {
+     "line": 1,
+     "mode": "masthead",
+     "text": "Render every word!",
+     "placement": "bottom"
+    }
+   ],
+   "devices": [],
+   "transition_in": "dissolve"
+  },
+  {
+   "id": "s003",
+   "t0": 6.0,
+   "t1": 8.0,
+   "section": "chorus",
+   "lines": [],
+   "set": "green field",
+   "lead_on_screen": true,
+   "framing": "WS",
+   "action": "the disc waits",
+   "camera": "pan left",
+   "motion_tier": "still",
+   "plate": "grad-c",
+   "clip": null,
+   "type": [],
+   "devices": [
+    {
+     "kind": "demo-not-registered",
+     "anchor": "subject",
+     "params": {},
+     "key": "B"
+    }
+   ],
+   "transition_in": "match"
+  }
+ ],
+ "seedance": {},
+ "plates": {
+  "grad-a": [
+   "s001"
+  ],
+  "grad-b": [
+   "s002"
+  ],
+  "grad-c": [
+   "s003"
+  ]
+ }
+}

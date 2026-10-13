@@ -1,0 +1,45 @@
+#!/bin/sh
+# slop - Claudia command-line shim.
+#
+# Runs THIS checkout's `slop` package with the Python in $SLOP_HOME/venv (made by bin/setup.sh).
+# Before setup has run it falls back to any system Python 3.11+ so `bin/slop doctor` can say what is missing.
+# $SLOP_HOME defaults to /workspace/.claudia on the Grok Bot computer and ~/.claudia elsewhere.
+# setup.sh also writes $SLOP_HOME/bin/slop (same job, paths baked in) - put $SLOP_HOME/bin on PATH or source
+# $SLOP_HOME/env.sh to call plain `slop`.
+
+if [ -z "${SLOP_HOME:-}" ]; then
+  if [ -d /workspace ] && [ "${HOME:-}" = "/home/box" ]; then
+    SLOP_HOME=/workspace/.claudia
+  else
+    SLOP_HOME="${HOME:-.}/.claudia"
+  fi
+fi
+export SLOP_HOME
+
+# non-secret settings written by setup.sh (PATH, HF_HOME, PLAYWRIGHT_BROWSERS_PATH, SLOP_*)
+if [ -f "$SLOP_HOME/env.sh" ]; then
+  . "$SLOP_HOME/env.sh"
+fi
+
+self="$0"
+if command -v readlink >/dev/null 2>&1; then
+  r="$(readlink -f "$0" 2>/dev/null)" && [ -n "$r" ] && self="$r"
+fi
+REPO="$(cd "$(dirname "$self")/.." && pwd)"
+PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH
+
+PY="$SLOP_HOME/venv/bin/python"
+if [ -x "$PY" ]; then
+  exec "$PY" -m slop "$@"
+fi
+
+for c in python3.13 python3.12 python3.11 python3; do
+  if command -v "$c" >/dev/null 2>&1 &&
+     "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+    echo "slop: $PY not found - run: bash $REPO/bin/setup.sh   (using $c for now)" >&2
+    exec "$c" -m slop "$@"
+  fi
+done
+echo "slop: no Python 3.11+ found. Run: bash $REPO/bin/setup.sh (it installs Python 3.13 under $SLOP_HOME)" >&2
+exit 127

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>taste</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="static/app.css">
+</head><body>
+<header><span class="meter" id="meter">…</span><nav><button id="savedBtn">saved</button><button id="tasteBtn">taste</button></nav></header>
+<div id="progress"><i id="bar"></i></div>
+<main>
+  <div id="single"><img id="img" alt=""></div>
+  <div id="pair"><figure id="p1"><img alt=""></figure><figure id="p2"><img alt=""></figure></div>
+  <div id="msg"></div>
+</main>
+<div id="done"></div>
+<footer id="tapbar"><button class="big" id="pass" aria-label="pass">✕</button><button class="small" id="undo">undo</button><button class="big" id="like" aria-label="like">♥</button></footer>
+<footer id="pairbar" style="display:none"><span class="hint">which is better?</span><button class="small" id="tie">both bad</button><button class="small" id="pskip">skip</button><button class="small" id="undo2">undo</button></footer>
+<div id="panel"></div>
+<script src="static/feed.js"></script>
+</body></html>

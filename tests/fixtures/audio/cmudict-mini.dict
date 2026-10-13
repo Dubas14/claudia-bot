@@ -1,0 +1,163 @@
+;;; subset of the CMU Pronouncing Dictionary (github.com/cmusphinx/cmudict), BSD-2-Clause:
+;;; Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved. Redistributed with this notice.
+;;; used by tests/test_audio_scansion.py
+a AH0
+a(2) EY1
+agents EY1 JH AH0 N T S
+alarmed AH0 L AA1 R M D
+am AE1 M
+am(2) EY1 EH1 M
+and AH0 N D
+and(2) AE1 N D
+apart AH0 P AA1 R T
+are AA1 R
+are(2) ER0
+as AE1 Z
+as(2) EH1 Z
+at AE1 T
+baby B EY1 B IY0
+back B AE1 K
+beach B IY1 CH
+billboard B IH1 L B AO2 R D
+billion B IH1 L Y AH0 N
+brakes B R EY1 K S
+catwalk K AE1 T W AA2 K
+catwalk(2) K AE1 T W AO2 K
+chrome K R OW1 M
+coming K AH1 M IH0 NG
+deceive D IH0 S IY1 V
+delve D EH1 L V
+desire D IH0 Z AY1 ER0
+don't D OW1 N T
+don't(2) D OW1 N
+doom D UW1 M
+door D AO1 R
+down D AW1 N
+echoes EH1 K OW0 Z
+electric IH0 L EH1 K T R IH0 K
+encore AA1 N K AO2 R
+equals IY1 K W AH0 L Z
+era EH1 R AH0
+era(2) IH1 R AH0
+escape IH0 S K EY1 P
+fast F AE1 S T
+feel F IY1 L
+felt F EH1 L T
+fire F AY1 ER0
+fire(2) F AY1 R
+five F AY1 V
+foot F UH1 T
+francisco F R AE0 N S IH1 S K OW0
+from F R AH1 M
+g JH IY1
+gas G AE1 S
+gentlemen JH EH1 N T AH0 L M IH0 N
+gentlemen(2) JH EH1 N AH0 L M IH0 N
+good G UH1 D
+good(2) G IH0 D
+half HH AE1 F
+he HH IY1
+head HH EH1 D
+heart HH AA1 R T
+hiring HH AY1 R IH0 NG
+hit HH IH1 T
+humans HH Y UW1 M AH0 N Z
+humans(2) Y UW1 M AH0 N Z
+i AY1
+ignite IH2 G N AY1 T
+in IH0 N
+in(2) IH1 N
+is IH1 Z
+is(2) IH0 Z
+it IH1 T
+it(2) IH0 T
+journey JH ER1 N IY0
+ladies L EY1 D IY0 Z
+lead L EH1 D
+lead(2) L IY1 D
+live L AY1 V
+live(2) L IH1 V
+lock L AA1 K
+look L UH1 K
+me M IY1
+minus M AY1 N AH0 S
+my M AY1
+neon N IY1 AA0 N
+never N EH1 V ER0
+north N AO1 R TH
+not N AA1 T
+of AH1 V
+off AO1 F
+on AA1 N
+on(2) AO1 N
+one W AH1 N
+or AO1 R
+or(2) ER0
+over OW1 V ER0
+p P IY1
+pay P EY1
+peptide P EH1 P T AY2 D
+percent P ER0 S EH1 N T
+plus P L AH1 S
+prepare P R IY0 P EH1 R
+rave R EY1 V
+read R EH1 D
+read(2) R IY1 D
+realm R EH1 L M
+retired R IH0 T AY1 R D
+retired(2) R IY0 T AY1 ER0 D
+retired(3) R IY0 T AY1 R D
+rise R AY1 Z
+san S AE1 N
+say S EY1
+seventeen S EH1 V AH0 N T IY1 N
+shadow SH AE1 D OW2
+shadows SH AE1 D OW2 Z
+shoes SH UW1 Z
+should SH UH1 D
+sixty S IH1 K S T IY0
+sleep S L IY1 P
+so S OW1
+sorry S AA1 R IY0
+stop S T AA1 P
+symphony S IH1 M F AH0 N IY0
+tapestry T AE1 P AH0 S T R IY0
+ten T EH1 N
+testament T EH1 S T AH0 M AH0 N T
+that DH AE1 T
+that(2) DH AH0 T
+the DH AH0
+the(2) DH AH1
+the(3) DH IY0
+they DH EY1
+this DH IH1 S
+this(2) DH IH0 S
+three TH R IY1
+to T UW1
+to(2) T IH0
+to(3) T AH0
+toe T OW1
+tokens T OW1 K AH0 N Z
+tonight T AH0 N AY1 T
+tonight(2) T UH0 N AY1 T
+twenty T W EH1 N T IY0
+twenty(2) T W EH1 N IY0
+unreasonable AH0 N R IY1 Z N AH0 B AH0 L
+velocity V AH0 L AA1 S AH0 T IY0
+velvet V EH1 L V AH0 T
+walk W AO1 K
+walk(2) W AA1 K
+was W AA1 Z
+was(2) W AH0 Z
+we W IY1
+went W EH1 N T
+whisper W IH1 S P ER0
+whisper(2) HH W IH1 S P ER0
+whispers W IH1 S P ER0 Z
+whispers(2) HH W IH1 S P ER0 Z
+why W AY1
+why(2) HH W AY1
+would W UH1 D
+you Y UW1
+your Y AO1 R
+your(2) Y UH1 R

@@ -1,0 +1,3 @@
+[display.txt: line N = how line N of lyrics.txt should READ on screen. "TEXT|n" covers n sung words: +25%|4  AGI|3]
+[Styles: ~strike~ *accent* _mono_. Lines starting with "[" are ignored. Full rules: lyrics/README.md]
+[Start it after `slop analyze` with: slop lyrics display --init --force   (then edit; check with: slop lyrics display)]

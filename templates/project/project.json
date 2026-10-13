@@ -1,0 +1,42 @@
+{
+ "name": "",
+ "title": "",
+ "tier": "quick",
+ "song": "audio/song.wav",
+ "fps": 24,
+ "size": [1920, 1080],
+ "lead": {
+  "note": "identity is prompt TEXT (write it in bible/LEAD.md): pin face, age, ethnicity, skin + the canon; framing words first, then the canon; far = a SHORT variant for full-length shots; never a face image as the identity reference",
+  "canon": "",
+  "far": "",
+  "possessive": "",
+  "noun": "",
+  "pronoun": ""
+ },
+ "look": {
+  "mode": "native",
+  "accent": "#D97757",
+  "fonts": {"lyric": "Space Grotesk", "micro": "IBM Plex Mono", "display": "Barlow Condensed"},
+  "hero_plate": null
+ },
+ "mj": {
+  "params": "--ar 16:9 --v 8.2 --raw --hd",
+  "profile": ""
+ },
+ "models": {
+  "image": "openai/gpt-image-2",
+  "video": "bytedance/seedance-2.5",
+  "video_cheap": "bytedance/seedance-2.0-mini",
+  "edit": "google/gemini-3-pro-image"
+ },
+ "budget": {
+  "openrouter_usd": 20,
+  "higgsfield_credits": 300,
+  "confirm_over_usd": 2
+ },
+ "gates": {
+  "board_approved": false,
+  "prompts_approved": false,
+  "v1_approved": false
+ }
+}

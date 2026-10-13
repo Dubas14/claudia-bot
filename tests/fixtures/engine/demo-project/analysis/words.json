@@ -1,0 +1,73 @@
+{
+ "words": [
+  {
+   "i": 0,
+   "w": "hello",
+   "line": 0,
+   "t0": 1.0,
+   "t1": 1.4,
+   "conf": 0.99,
+   "src": "manual"
+  },
+  {
+   "i": 1,
+   "w": "slop",
+   "line": 0,
+   "t0": 1.5,
+   "t1": 1.9,
+   "conf": 0.99,
+   "src": "manual"
+  },
+  {
+   "i": 2,
+   "w": "world",
+   "line": 0,
+   "t0": 2.0,
+   "t1": 2.6,
+   "conf": 0.99,
+   "src": "manual"
+  },
+  {
+   "i": 3,
+   "w": "render",
+   "line": 1,
+   "t0": 4.0,
+   "t1": 4.4,
+   "conf": 0.99,
+   "src": "manual"
+  },
+  {
+   "i": 4,
+   "w": "every",
+   "line": 1,
+   "t0": 4.5,
+   "t1": 4.9,
+   "conf": 0.99,
+   "src": "manual"
+  },
+  {
+   "i": 5,
+   "w": "word",
+   "line": 1,
+   "t0": 5.0,
+   "t1": 5.8,
+   "conf": 0.99,
+   "src": "manual"
+  }
+ ],
+ "lines": [
+  {
+   "line": 0,
+   "text": "Hello slop world.",
+   "t0": 1.0,
+   "t1": 2.6
+  },
+  {
+   "line": 1,
+   "text": "Render every word!",
+   "t0": 4.0,
+   "t1": 5.8
+  }
+ ],
+ "gaps": []
+}

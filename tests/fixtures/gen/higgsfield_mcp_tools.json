@@ -1,0 +1,39 @@
+{
+ "_source": "Request side of the Higgsfield connector's tool definitions as served to the agent on 2026-10-01 (the bot runs these; the CLI writes the request file). Names, required keys and limits copied from the live schemas; descriptions shortened.",
+ "generate_video": {
+  "required": ["params"],
+  "params": {
+   "required": ["model"],
+   "properties": ["aspect_ratio", "count", "declined_preset_id", "duration", "folder_id", "get_cost", "medias", "model",
+                  "preset_id", "prompt", "use_unlim"],
+   "additional_properties": true,
+   "count": {"minimum": 1, "maximum": 4, "default": 1},
+   "get_cost": "If true, return the cost in credits for this generation without submitting any job.",
+   "use_unlim": "OMIT IT to let the server decide - if the caller holds an allowance the tool submits nothing and returns `unlim_choice`, the question to put to the user; answer by calling again with the same params plus this field.",
+   "medias_item": {"required": ["value", "role"],
+                   "value": "UUID from media_upload/media_import_url or job_id from a prior generation. Do not pass https:// URLs here."}
+  }
+ },
+ "generate_video_batch": {
+  "required": ["requests"],
+  "requests": {"minItems": 1, "maxItems": 12},
+  "requests_item": {"required": ["index", "params"], "additional_properties": false},
+  "params": {"required": ["model"], "count": {"const": 1}, "get_cost": "not allowed inside a batch",
+             "additional_properties": true}
+ },
+ "jobs_wait": {
+  "required": ["jobs"],
+  "jobs": {"minItems": 1, "maxItems": 12},
+  "jobs_item": {"required": ["index", "job_id"], "additional_properties": false, "job_id_format": "uuid"},
+  "timeout_seconds": {"default": 15, "minimum": 0, "maximum": 15}
+ },
+ "show_generation_by_ids": {"required": ["jobs"], "jobs_item": {"required": ["index", "job_id"]}, "jobs": {"maxItems": 60}},
+ "media_upload": {"properties": ["content_type", "filename", "files", "method"], "files": {"maxItems": 20}},
+ "media_confirm": {"required": ["type"], "properties": ["media_id", "media_ids", "type"],
+                   "type_enum": ["image", "video", "audio", "file"]},
+ "media_import_url": {"required": ["url"], "properties": ["type", "url"], "type_enum": ["auto", "image", "video", "audio"]},
+ "model_params_used_by_slop": {
+  "_note": "model-specific keys (allowed by additional_properties) that the production seedance_2_5 requests used",
+  "keys": ["mode", "resolution", "draft", "generate_audio"]
+ }
+}
