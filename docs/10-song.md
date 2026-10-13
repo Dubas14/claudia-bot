@@ -411,6 +411,26 @@ Example ranking (SP Verse 3 opening):
    file after any change to the lint or the lyric, and the flow scores must still rank the sections in the owner's
    order. If they don't, trust the owner and treat the score as advice only.
 
+### 3.7b The scorer: scansion and assonance
+
+`tools/scansion.py` is the director's scorer (it needs `cmudict`; `g2p_en`, `nltk` and `wordfreq` are optional:
+they pronounce words the dictionary lacks and score word frequency). One command gives two numbers per section and
+for the song:
+
+```sh
+python3 tools/scansion.py lyric LYRICS.md --brief
+```
+
+- **SCANSION**: how the words sit on the grid as Suno sings them (flow without its rhyme term, with groove).
+- **ASSONANCE**: whether line ends ring (a rhyme, a slant rhyme or shared vowels within four lines), plus the echo
+  of stressed vowels inside lines. Without `--brief` it lists each line's end sound and its partner.
+- The finished songs: ESCAPE VELOCITY 75 / 39, CLODYSSEY 83 / 55, BLISS 80 / 43.
+- The loop: score the draft, rewrite the weakest section in 3-5 variants, keep the best, make a take; the director
+  picks by ear. Every sung couplet should ring; spoken deadpan lines may stay unrhymed.
+- Also: `scansion.py line '<text>' --mode spoken|sung|chant`, `scansion.py flow LYRICS.md` (verses in Suno's
+  two-bar slots), `scansion.py groove LYRICS.md` (chants and hooks). Pronunciations: pron.json next to the
+  lyrics; words never to use: ban.json next to the lyrics ({"word": "why"}).
+
 ### 3.8 Exemplars (verbatim lyrics fields)
 
 **EV (as generated; the take the video uses):**

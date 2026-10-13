@@ -128,7 +128,7 @@ command for it: build it from the wiki's spec if the project needs it.
 | Wiki tool | Toolkit |
 |---|---|
 | 1 The project folder and its logs | `slop new`, `slop decide`, `slop runs add`, `slop status` (`DECISIONS.md`, `NOTES.md`, `RUNS.md`, `ledger.jsonl`) |
-| 2 The lyric scorer: scansion and assonance | partly: `slop lyrics lint` scores scansion and rhyme (assonance counts inside the rhyme score); no per-section assonance number |
+| 2 The lyric scorer: scansion and assonance | `python3 tools/scansion.py lyric LYRICS.md --brief` (the director's scorer: both numbers per section and song); `slop lyrics lint` for Suno spelling |
 | 3 The Suno pack | no command: written by the bot from `10-song.md` §4 into `suno/` |
 | 4 Stems | `slop analyze` |
 | 5 Timed words and the ear check | `slop analyze` (alignment and the ear-check list in `analysis/report.md`), `slop lyrics fix`, `slop lyrics check` |

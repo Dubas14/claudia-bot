@@ -2,7 +2,7 @@
 # setup.sh - idempotent Claudia installer. Everything goes under $SLOP_HOME; it never uses apt or sudo.
 #
 #   bash bin/setup.sh                 install/repair the profile installed last time (minimal on first run)
-#   bash bin/setup.sh --minimal       numpy pillow requests soundfile scipy playwright==1.60.0 (+ chromium, cloudflared)
+#   bash bin/setup.sh --minimal       numpy pillow requests soundfile scipy cmudict playwright==1.60.0 (+ chromium, cloudflared)
 #   bash bin/setup.sh --full          minimal + CPU torch/torchaudio/torchvision 2.11, demucs 4.1.0,
 #                                     transformers 5.17.*, librosa 1.0.0, opencv-python-headless, safetensors,
 #                                     accelerate, wordfreq + the raw CMU Pronouncing Dictionary (lyric lint)
@@ -83,10 +83,10 @@ PYVER="${SLOP_PYTHON_VERSION:-3.13}"
 TORCH_V=2.11.0; TORCHAUDIO_V=2.11.0; TORCHVISION_V=0.26.0
 TORCH_INDEX="${SLOP_TORCH_INDEX:-https://download.pytorch.org/whl/cpu}"
 PLAYWRIGHT_V=1.60.0
-MINIMAL_PKGS=(numpy pillow requests soundfile scipy "playwright==$PLAYWRIGHT_V")
+MINIMAL_PKGS=(numpy pillow requests soundfile scipy cmudict "playwright==$PLAYWRIGHT_V")
 FULL_PKGS=("demucs==4.1.0" "transformers==5.17.*" "librosa==1.0.0" opencv-python-headless safetensors accelerate
            "wordfreq>=3.1,<4")
-MINIMAL_MODS=(numpy PIL requests soundfile scipy playwright)
+MINIMAL_MODS=(numpy PIL requests soundfile scipy cmudict playwright)
 FULL_MODS=(torch torchaudio torchvision demucs transformers librosa cv2 safetensors accelerate wordfreq)
 CMU_URL="https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict"   # BSD-2-Clause data
 CMU_FILE="$SLOP_HOME/cache/cmudict/cmudict.dict"; CMU_MIN_BYTES=1000000

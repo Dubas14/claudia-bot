@@ -95,6 +95,13 @@ to credit, and whether to publish a making-of). Record the answers verbatim.
 
 - `slop -p NAME next` says the next step and the exact command. The docs: {{TOOLKIT}}/docs/ (start with
   00-overview.md). Long steps run as `slop -p NAME job start -- ...`, then `job wait`.
+- **Lyrics: score every draft** with the director's scorer:
+  `$SLOP_HOME/venv/bin/python {{TOOLKIT}}/tools/scansion.py lyric LYRICS.md --brief` (SCANSION and ASSONANCE
+  per section and for the song; drop --brief for each line's end sound and partner). The finished songs scored
+  ESCAPE VELOCITY 75 / 39, CLODYSSEY 83 / 55, BLISS 80 / 43. Rewrite the weakest section in 3-5 variants, keep the
+  best, and let the director pick by ear: a score never replaces hearing a take. Every sung couplet should ring;
+  spoken deadpan lines may stay unrhymed. `scansion.py line '<text>' --mode sung` checks one line;
+  `scansion.py flow LYRICS.md` the verses' two-bar slots. Words never to use: ban.json next to the lyrics.
 - Stage checklists, the exact commands in order: {{TOOLKIT}}/skills/song, storyboard, plates, clips and
   render-and-review (SKILL.md in each); whole runs: mv-quick, mv-studio, mv-director. They were written for a chat
   bot that directed: skip their widgets, secret cards and turn rule; you talk only through relay say and ask.
