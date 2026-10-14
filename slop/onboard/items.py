@@ -98,7 +98,8 @@ CATALOG = [
          unlocks="Higgsfield video: Seedance 2.5 sung clips (copies the vocals more reliably on stubborn windows), "
                  "Kling, Veo and more on your credits"),
     dict(id="drive", group="connectors", title="Google Drive connector", kind="record", need="ooo",
-         cost="free", unlocks="Bulk import of songs and reference images from Google Drive"),
+         cost="free", unlocks="Finished videos and big files sent to you as links in your own Google Drive (big "
+                               "videos often fail as chat attachments)"),
     # derived: OpenRouter OR Higgsfield (the Studio and Director tiers need one of them)
     dict(id="video", group="connectors", title="Video clips (OpenRouter or Higgsfield)", kind="check", need="crr",
          cost="OpenRouter: Seedance 2.0 Mini 480p about $0.14 for 4 s, Seedance 2.5 about $0.10 a second at 480p; "

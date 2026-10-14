@@ -47,7 +47,8 @@ There is one relay per computer. Grok never names a project: the production work
      signed-in browser (skills midjourney and suno);
    - `slop relay job --kind person --text BLOCK --expect FILE`: only what no browser can do for the person;
    - `slop relay inbox`: messages that arrived during the turn.
-4. `slop --json relay read --wait 200`: new say/ask items verbatim with their files (marked read), every open job
+4. `slop --json relay read --wait 200`: new say/ask items verbatim with their files (marked read; videos and files
+   over 20 MB go to the person as links in their own Google Drive, skill drive), every open job
    with all its fields, the production's state, and one `grok_next` line, for example "Post these 2 messages
    verbatim with their files, then run job J-0003 with skill grok-imagine (...), then `slop --json relay read
    --wait 200`." The wait is capped at 240 s and returns early on anything new; it returns at once when nothing

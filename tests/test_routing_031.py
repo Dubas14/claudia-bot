@@ -110,6 +110,19 @@ def test_a_save_path_from_the_projects_folder_is_not_doubled(tmp_path, monkeypat
     assert r["jobs"][-1]["expect"] == [str((proj / "song" / "take.wav").absolute())]
 
 
+def test_videos_and_big_files_go_by_drive_link(tmp_path, monkeypatch):
+    env = RT.setup(tmp_path, monkeypatch)
+    clip = tmp_path / "v1-excerpt.mp4"
+    clip.write_bytes(b"\0" * 1000)
+    monkeypatch.setenv("FAKE_RELAY_SHOW", str(clip))
+    assert K.run("relay", "setup")[0] == 0
+    K.run("relay", "send", "the excerpt please")
+    items, r = RT.collect(lambda it, r: any(i.get("files") for i in it))
+    r = K.run("relay", "read", "--all")[1]
+    assert "send v1-excerpt.mp4 as Google Drive links: skill drive" in r["grok_next"], r["grok_next"]
+    assert relay._by_link(str(clip)) and not relay._by_link(str(tmp_path / "sheet.jpg"))
+
+
 def test_a_changed_brief_is_read_again(tmp_path, monkeypatch):
     monkeypatch.setenv("SLOP_HOME", str(tmp_path / "home"))
     (tmp_path / "home" / "relay").mkdir(parents=True)

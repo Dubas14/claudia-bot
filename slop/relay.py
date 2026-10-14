@@ -952,12 +952,27 @@ def _render_job(j: dict) -> str:
     return s
 
 
+VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi"}
+LINK_OVER_B = 20 * 1024 * 1024          # bigger files (and every video) reach the person as a Drive link (skill drive)
+
+
+def _by_link(f: str) -> bool:
+    p = Path(f)
+    try:
+        return p.suffix.lower() in VIDEO_EXT or p.stat().st_size > LINK_OVER_B
+    except OSError:
+        return p.suffix.lower() in VIDEO_EXT
+
+
 def _grok_next(items: list, prod: dict, jobs: list) -> str:
     steps = []
     if items:
         n, nf = len(items), sum(len(i.get("files") or []) for i in items)
         steps.append(("Post this message" if n == 1 else f"Post these {n} messages") + " verbatim"
                      + ((" with its files" if n == 1 else " with their files") if nf else ""))
+        big = [f for i in items for f in i.get("files") or [] if _by_link(f)]
+        if big:                                 # chat attachments often fail for videos: the person's Drive instead
+            steps[-1] += (" (send " + ", ".join(Path(f).name for f in big) + " as Google Drive links: skill drive)")
     for j in jobs:
         k = j.get("job_kind")
         if k in SKILL_FOR or k == "browser":

@@ -73,7 +73,7 @@ def test_recipe_matches_the_template_schema(built):
     recipe, _, _ = built
     assert set(recipe) == {"profile", "memory", "skills", "routines", "plugins", "gettingStarted"}
     assert recipe["profile"]["name"] == "Claudia" and recipe["profile"]["description"].strip()
-    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 9
+    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 10
     assert "setup-gpu" not in BR.ORDER and (SKILLS / "setup-gpu" / "SKILL.md").is_file(), "parked, not shipped"
     for s in recipe["skills"]:
         assert set(s) == {"name", "description", "content"} and all(s.values())
