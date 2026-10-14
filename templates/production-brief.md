@@ -28,7 +28,10 @@ This folder ({{WORK}}) holds every project. You work here. Three parties:
 - Send pictures, not descriptions: contact sheets, numbered stills, a five-second proof. `--show` takes the files.
 - Ping only at a checkpoint, when a paid service fails, when a step needs the person, or when a decision is theirs
   (taste, money, a real person's likeness).
-- End the turn when you wait for the director or for a job. Never sleep in a turn waiting for an answer.
+- End the turn only when you wait for the director or for a Grok job (`relay job`). Never sleep in a turn waiting
+  for an answer. Your own long steps (`slop job`: renders, analysis) are not a reason to end it: keep calling
+  `slop -p NAME job wait ID` until the job finishes (a turn may run for hours); nothing restarts you when a job ends
+  after your turn did.
 
 ## The claudia.gallery MCP comes first
 
@@ -95,7 +98,7 @@ the answers verbatim.
 ## The toolkit
 
 - `slop -p NAME next` says the next step and the exact command. The docs: {{TOOLKIT}}/docs/ (start with
-  00-overview.md). Long steps run as `slop -p NAME job start -- ...`, then `job wait`.
+  00-overview.md). Long steps run as `slop -p NAME job start -- ...`, then `job wait`, again until it is done.
 - **Lyrics: score every draft** with the director's scorer:
   `$SLOP_HOME/venv/bin/python {{TOOLKIT}}/tools/scansion.py lyric LYRICS.md --brief` (SCANSION and ASSONANCE
   per section and for the song; drop --brief for each line's end sound and partner). The finished songs scored

@@ -62,6 +62,7 @@ SKILL_URL = "https://claudia.gallery/skill/claudia-skill.zip"
 ENGINES = ("claude", "codex")
 DEFAULT_MODEL = {"claude": "opus", "codex": None}
 WAIT_CAP_S = 240.0
+READ_SETTLE = 5                # a production that stops working must stay stopped this many polls (2 s) to end a wait
 PROMPT_ARG_MAX = 6000          # longer prompts go through a file (Windows command lines max out at 32,767 chars)
 START_GRACE_S = 30.0           # a "starting" claim without a supervisor is given up after this
 LOCK_WAIT_S = 20.0
@@ -898,19 +899,27 @@ def cmd_read(a) -> dict:
     _, rd = _dirs()
     wait = max(0.0, min(float(a.wait or 0), WAIT_CAP_S))
     t0 = time.monotonic()
-    new, prod, q, sig0 = _snapshot(rd)
-    while wait > 0 and not new and not q and prod.get("state") == "working" and time.monotonic() - t0 < wait:
-        time.sleep(0.4)
-        new, prod, q, sig = _snapshot(rd)
-        if sig != sig0:
+    calm = 0
+    while True:
+        # the wait holds its full time unless there is something for Grok: a new item, an open job, or a production
+        # that stopped working (waiting, idle, failed) and stays stopped - a blip in its state never ends a wait
+        new, prod, q, _sig = _snapshot(rd)
+        left = wait - (time.monotonic() - t0)
+        if not new and not q and left > 0:
+            calm = calm + 1 if prod.get("state") != "working" else 0
+            if calm < READ_SETTLE:
+                time.sleep(0.4)
+                continue
+        with _lock(rd):                               # take the new items and mark them read in one step
+            st = _read_json(rd / "state.json")
+            rows = _rows(rd / "outbox.jsonl")
+            new = [r for r in rows if int(r.get("id") or 0) > int(st.get("read") or 0)]
+            if new:
+                st["read"] = max(int(r["id"]) for r in new)
+                _write_json(rd / "state.json", st)
+        if new or _jobs(rd) or wait - (time.monotonic() - t0) <= 0 or production(rd).get("state") != "working":
             break
-    with _lock(rd):                                   # take the new items and mark them read in one step
-        st = _read_json(rd / "state.json")
-        rows = _rows(rd / "outbox.jsonl")
-        new = [r for r in rows if int(r.get("id") or 0) > int(st.get("read") or 0)]
-        if new:
-            st["read"] = max(int(r["id"]) for r in new)
-            _write_json(rd / "state.json", st)
+        calm = 0                                      # a misread, nothing new after all: keep waiting
     shown = [r for r in (rows if a.all else new) if r.get("kind") in ("say", "ask")]
     items = [_item(r) for r in shown]
     prod = production(rd)
