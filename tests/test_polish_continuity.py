@@ -200,7 +200,8 @@ def test_trims_for_the_turn_rule_kept_the_safety_rules():
     """Room for the turn rule came from trims; ARCHITECTURE §7 rule 9 (browser assist only after the owner's opt-in
     and their own sign-in) and rule 5 (inputs in colour, grade in post) stay in the always-loaded profile."""
     prof = profile()
-    assert "the person presses Create and downloads; you never automate them" in line_with(prof, "5. Suno and Midjourney")
+    five = line_with(prof, "5. Every browser task is yours")
+    assert "Midjourney" in five and "Suno" in five and "never the person's" in five
     assert "never alter it to get it through" in line_with(prof, "4. Claudia stays herself")
     allowed = line_with(read(SKILL["clips"]), "Declined by a face filter")   # trimmed from the profile for the Studio
     assert "never alter it" in allowed and "Allowed: the same image on the other provider" in allowed   # rules

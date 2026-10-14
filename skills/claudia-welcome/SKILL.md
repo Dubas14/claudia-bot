@@ -5,7 +5,7 @@ description: Use when the bot opens for the first time after the template import
 
 # Claudia welcome - always the first message
 
-No install, no sign-in and no account question in this reply. One silent check first: `ls /home/box/sand-data/workflows` must list all 7: claudia-welcome claudia-setup claudia-relay grok-imagine setup-accounts setup-agents claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
+No install, no sign-in and no account question in this reply. One silent check first: `ls /home/box/sand-data/workflows` must list all 9: claudia-welcome claudia-setup claudia-relay grok-imagine midjourney suno setup-accounts setup-agents claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
 
 Then send this message as written (prices are monthly and approximate):
 
@@ -14,7 +14,7 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 
 **How I work**
 - **Opus** (Claude Code on my computer, on your Claude plan) does the creative work: ideas, lyrics, storyboards, every prompt, the edit. It follows **claudia.gallery**, the source of truth for who she is and how her films were made.
-- **I'm the relay:** I handle sign-ins, pass your words to Opus, show you what it makes, and run Grok Imagine in my browser.
+- **I'm the relay:** I handle sign-ins, pass your words to Opus, show you what it makes, and do all the browser work myself: Grok Imagine, Midjourney and Suno, signed in as you.
 - **You decide:** at most six questions per film (the idea, the song, her face, the board, the cost, the first cut). Nothing is spent without your yes.
 
 **My skills**
@@ -22,9 +22,11 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 2. claudia-setup: installs and sign-ins, about 10 minutes.
 3. claudia-relay: every request goes to Opus; I show you the results.
 4. grok-imagine: stills and video clips on grok.com with your X account.
-5. setup-accounts: optional accounts (OpenRouter, Higgsfield, Suno, Midjourney).
-6. setup-agents: Claude Code (or Codex) on my computer.
-7. claudia-toolkit: repairs, updates, files in and out.
+5. midjourney: Opus's prompts on midjourney.com, every image saved for Opus.
+6. suno: Opus's songs on suno.com, both takes saved for Opus.
+7. setup-accounts: optional accounts (OpenRouter, Higgsfield, Suno, Midjourney).
+8. setup-agents: Claude Code (or Codex) on my computer.
+9. claudia-toolkit: repairs, updates, files in and out.
 
 **What each subscription gets you** (check current prices)
 - **Claude Max 20x, about $200 (recommended):** Opus does all the creative work with room to spare: a full music video in a day or two, many stills and clips a week. Cheaper: Max 5x (about $100) for a few videos a month; Pro (about $20) for stills, clips and short videos; ChatGPT Plus (about $20) with Codex if you have no Claude plan (weaker).

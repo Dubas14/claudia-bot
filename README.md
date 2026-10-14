@@ -30,9 +30,9 @@ inside a project folder, so work survives restarts, can be resumed by run id, an
 
 Rules the code enforces: every sung word on screen at its aligned time; cuts on the variable beat map; estimate
 before any paid call and confirm above the project threshold; real spend read from the provider; a declined
-reference is never altered to get past a safety filter; Suno is never automated (its terms forbid bots: you press
-Create and download the WAV, the bot writes the lyric and style fields as copy blocks); in Midjourney you paste the
-bot's prompt blocks, pick and download; OFL fonts and Apache/MIT models only (Depth-Anything-V2-**Small**, never Large).
+reference is never altered to get past a safety filter; every browser task (Midjourney, Suno, Grok Imagine) is
+Grok's, in its own browser where you signed in once, and you only make the decisions; OFL fonts and Apache/MIT models
+only (Depth-Anything-V2-**Small**, never Large).
 
 ## Install
 
@@ -330,7 +330,7 @@ or after the command name; the documented form is `slop --json --project NAME <c
 | `slop relay fail JOB --reason REASON [--declined]` | (Grok) a job could not be done: mark it failed (--declined: the service refused it) |
 | `slop relay say TEXT [--show FILE]` | (the production) post a message for the director, with files to show |
 | `slop relay ask TEXT [--default DEFAULT] [--show FILE]` | (the production) ask the director one question, with its default |
-| `slop relay job --kind grok-imagine\|person [--what WHAT] [--prompt PROMPT] [--prompt-file PROMPT_FILE] [--image IMAGE] [--aspect 16:9\|9:16\|1:1\|2:3\|3:2] [--seconds SECONDS] [--save SAVE] [--name NAME] [--note NOTE] [--text TEXT] [--expect EXPECT]` | (the production) ask Grok for browser work (--kind grok-imagine) or the person for a step only they can do (--kind person: Suno, Midjourney, a sign-in) |
+| `slop relay job --kind grok-imagine\|midjourney\|suno\|browser\|person [--what WHAT] [--prompt PROMPT] [--prompt-file PROMPT_FILE] [--image IMAGE] [--aspect 16:9\|9:16\|1:1\|2:3\|3:2] [--seconds SECONDS] [--save SAVE] [--name NAME] [--note NOTE] [--text TEXT] [--title TITLE] [--style STYLE] [--lyrics LYRICS] [--lyrics-file LYRICS_FILE] [--exclude EXCLUDE] [--instrumental] [--url URL] [--expect EXPECT]` | (the production) ask Grok for browser work, all of it in Grok's own signed-in browser (--kind grok-imagine \| midjourney \| suno \| browser); --kind person only for what only a person can do |
 | `slop relay inbox` | (the production) new messages from the director and Grok, marked read |
 | `slop relay status` | the production's state, engine, session, message counts and open jobs |
 | `slop relay stop [--grace GRACE]` | stop the running production turn (waiting messages stay) |

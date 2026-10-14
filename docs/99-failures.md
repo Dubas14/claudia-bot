@@ -33,7 +33,7 @@ between them · **[ops]** the owner's agent-swarm runs · **[tk]** found while b
 | B4 | Numbers/acronyms sung wrong [EV] | written as digits | spell as sung ("A G I", "eighteen") in `lyrics.txt`; the display layer shows "AGI" | 10-song, 70 §6.3 |
 | B5 | Lyric rushes or truncates silently [EV] | lyrics field over ~3,000 characters | aim 1,800–2,400 characters for ~2:20; one breath per line | 10-song |
 | B6 | Can't fetch the chosen take [EV][SP] | the download is a native browser download; the CDN needs signed URLs | the user downloads it (their download is also the licensing step) and gives the file | 10-song |
-| B7 | Automation stuck on "Verify you are human" [SP] | a Cloudflare check in an iframe on the first Create | Suno is never automated now (its terms forbid bots): the owner presses Create in their own browser; captchas are always theirs | 10-song |
+| B7 | Automation stuck on "Verify you are human" [SP] | a Cloudflare check in an iframe on the first Create | Grok stops at any captcha or "Verify you are human" and hands its browser to the owner for that one click; it never solves one | 10-song |
 | B8 | Browser tab gone mid-task [SP] | Suno tabs close after 30 idle minutes | the bot no longer drives Suno tabs: the owner generates and downloads | 10-song |
 | B9 | "A voice already exists for this song" [SP] | Suno allows one Voice per source song | make one combined (spoken + sung) Voice | 10-song |
 | B10 | The new take changed the song's shape (no instrumental where there was one) [SP] | takes differ in structure, not just timing | re-time the board from word anchors, then restructure by hand where the shape changed | 40-storyboard |

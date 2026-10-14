@@ -73,7 +73,7 @@ def test_recipe_matches_the_template_schema(built):
     recipe, _, _ = built
     assert set(recipe) == {"profile", "memory", "skills", "routines", "plugins", "gettingStarted"}
     assert recipe["profile"]["name"] == "Claudia" and recipe["profile"]["description"].strip()
-    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 7
+    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 9
     assert "setup-gpu" not in BR.ORDER and (SKILLS / "setup-gpu" / "SKILL.md").is_file(), "parked, not shipped"
     for s in recipe["skills"]:
         assert set(s) == {"name", "description", "content"} and all(s.values())
@@ -287,8 +287,9 @@ def test_setup_accounts_covers_every_account():
     text = read(SKILLS / "setup-accounts" / "SKILL.md")
     for must in ("OPENROUTER_API_KEY", "credit limit", "SearchPlugins", "question widget", "next turn",
                  "onboard mark higgsfield --connected", "onboard mark drive --connected", "onboard set suno-plan",
-                 "suno-signin --skip", "presses Create", "onboard set mj-plan", "onboard set mj-profile CODE",
-                 "onboard apply", "mj-signin --skip", "never automate", "ARENA_TOKEN", "secure secret card"):
+                 "suno-signin --done", "skill suno", "onboard set mj-plan", "onboard set mj-profile CODE",
+                 "onboard apply", "mj-signin --done", "skill midjourney", "never type passwords", "ARENA_TOKEN",
+                 "secure secret card"):
         assert must in text, must
 
 

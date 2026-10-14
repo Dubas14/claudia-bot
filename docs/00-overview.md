@@ -75,9 +75,10 @@ command refuses to go on until it holds.
    context, and the owner reads the book before any spend.
 8. **Spend gates:** estimate before spending; a clip must be `locked` and confirmed; real spend is read from the
    provider; an owner quality flag stops all spending.
-9. **Never alter a declined reference to get past a safety filter. Never type the owner's credentials.** Never
-   automate Suno: its terms forbid bots, so the owner presses Create and downloads the WAV, and you write the lyric
-   and style fields as copy blocks. In Midjourney the owner pastes your prompt blocks, picks and downloads.
+9. **Never alter a declined reference to get past a safety filter. Never type the owner's credentials.** Every
+   browser task is Grok's: Midjourney, Suno and Grok Imagine run in Grok's own browser, where the owner signed in
+   once (`slop relay job --kind midjourney|suno|grok-imagine`). The owner decides; they never paste,
+   press Create or download.
 10. **The master** is tagged BT.709 primaries and matrix with the sRGB transfer (`iec61966-2-1`), as the reference
     videos' encoder tagged it (the frames are sRGB pixels), CRF ≤ 16, verified with ffprobe; at most 3 flashes a
     second.
@@ -118,7 +119,7 @@ command refuses to go on until it holds.
 | 5 | Ingest + analysis | stems, alignment, beat map, hits, report; ear-check; confirm the sections and bar lines; a generated song's words | `slop fetch`, `slop song ingest`, `slop analyze`, `slop song sections`, `slop song bars`, `slop lyrics check` | `audio/`, `analysis/*.json`, `analysis/report.md` | — | 20-analysis |
 | 6 | Lead + look | canon text, look mode, accent, 4 test plates | (prompt book) | `project.json` lead/look | **G3** | 50-plates-midjourney |
 | 7 | Storyboard | set the tier's pace (`board.pace`), then shots on beats, one graphic per line, motion budget | `slop board draft`, `slop board set` / `slop board fill` / `slop board device add`, `slop board audit`, `slop board sheet`, `slop board approve` | `board/shots.json`, `board/board.pdf` | **G4** | 40-storyboard |
-| 8 | Plates | prompt book → owner pastes into Midjourney (or the API batch) → ingest → pick | `slop plates book`, `slop gen image --jobs`, `slop plates ingest`, `slop plates pick`, `slop plates vary`, `slop plates box` | `plates/prompts.md`, `plates/picks.json` | — | 50/51 |
+| 8 | Plates | prompt book → Grok runs it in Midjourney (or the API batch) → ingest → pick | `slop plates book`, `slop gen image --jobs`, `slop plates ingest`, `slop plates pick`, `slop plates vary`, `slop plates box` | `plates/prompts.md`, `plates/picks.json` | — | 50/51 |
 | 9 | Clip prompts | the lead writes every video prompt in one context: the short sung form for sung clips, a screenplay for motion clips | `slop clip new`, `slop clip lock` | `clips/<clip>.json` (status `locked`) | **G5** | 60-clips |
 | 10 | Clips | submit, poll, measure lip sync, cover divergences | `slop clip submit --yes`, `slop clip poll`, `slop clip sync`, `slop clip cover` | `clips/<clip>/take-N.mp4` | — | 60/61/62 |
 | 11 | Edit | resolve every shot to a source | `slop edit edl`, `slop edit export` | `edit/edl.json`, `engine/` | — | 40/70 |
@@ -195,7 +196,7 @@ the decision rules below.
 |---|---|---|---|
 | Who | anyone with the bot | owner has an OpenRouter key, Higgsfield, and their own Midjourney/Suno | owner also has a Claude, ChatGPT (Codex) or Muse Code plan: the agent runs on the bot's computer (`slop agents`) or on their own machine |
 | Song | owner's own Suno upload, or Lyria via OpenRouter (≤ 3 min) | Suno v6 with the full pack, auditioned by ear | Suno, plus a lyric-writing loop with research and scansion scoring |
-| Stills | API images (OpenRouter / Higgsfield / the bot's own image tool) | Midjourney via the prompt book (owner pastes), or API | Midjourney |
+| Stills | API images (OpenRouter / Higgsfield / the bot's own image tool) | Midjourney via the prompt book (Grok's browser), or API | Midjourney |
 | Motion | a few clips on cheap models or 480p drafts, plus 2.5D plates | Seedance 2.5 sung clips with measured lip sync, plus covers | full: sung chains, screenplay motion clips, covers |
 | Storyboard | auto-drafted at the Quick pace (set `board.pace` first, 40-storyboard §6.1), light edits; ≈ 14 shots a minute, about one per lyric line (measured: the draft gives 73 shots for the 5:06 reference song) | drafted at the Studio pace, one pass by the bot; ≈ 20 shots a minute (measured: 100 shots for 5:06) | delegated: three director angles + judges + merge, or the lead's board from the owner's walkthrough + a critic; EV's pace, ≈ 27 shots a minute (EV: 141 shots; the draft at this pace: 130 shots for 5:06) |
 | Motion design | the data-driven default renderer (lyric modes, chrome, CV marks, readouts) | default renderer + per-shot devices from `shots.json` | bespoke chapter code: animator → art director (renders and reviews) → fixer |

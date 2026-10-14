@@ -15,7 +15,7 @@ lyric videos, at any user's depth:
 | Tier | Who / what | Song | Stills | Motion | Agents | Typical cost |
 |---|---|---|---|---|---|---|
 | **Quick** | Grok Bot + its cloud computer only | the user's Suno upload, or Lyria via OpenRouter (≤ 3 min) | API images (OpenRouter / Higgsfield / Grok's image tool) | a few motion clips (cheap models, 480p drafts) + 2.5D, or none | none | $0–20, 10–15 turns (live run: $1.06, 13 turns) |
-| **Studio** | + an OpenRouter key or Higgsfield (both recommended) + the user's own Midjourney / Suno (human in the loop: the user pastes, presses Create and downloads) | Suno (the user's) | Midjourney (prompt book → paste → ingest) or API | Seedance 2.5 sung clips with measured lip sync, covers | none | $50–110, 20–35 turns |
+| **Studio** | + an OpenRouter key or Higgsfield (both recommended) + the user's own Midjourney / Suno (Grok runs them in its browser, where the user signed in once) | Suno (the user's) | Midjourney (prompt book → Grok's browser → ingest) or API | Seedance 2.5 sung clips with measured lip sync, covers | none | $50–110, 20–35 turns |
 | **Director** | + the user's own Claude Code / Codex / Muse Code | Suno | Midjourney | full | delegated workflows (storyboard panel, bespoke chapter motion design, reviews) | EV-class; Grok turns only at the gates |
 
 Design for return visits: multi-session projects, a taste profile that improves with use and follows the user across
@@ -43,11 +43,10 @@ projects, and a fast first win (the Quick tier in one sitting).
   bound was 1.5 % a turn). The bot must work in few, fat turns: **one `slop` command does many steps**. A bot cannot
   wake itself, so a turn keeps working (bounded `slop job wait`) up to a checkpoint, or ends asking the user to say
   "continue".
-- Midjourney and Suno have no API and their terms forbid automation. Default = **human in the loop** (the bot writes
-  paste-ready packs, the user submits, the bot ingests). **Suno is never automated**: the user presses Create and
-  downloads the WAV; the bot writes the lyric and style fields as copy blocks. Midjourney: the user pastes the prompt
-  blocks, picks and downloads; browser assist only if the user asks for it and accepts the terms risk in writing
-  (`50-plates-midjourney.md` §9).
+- Midjourney and Suno have no API. **Grok runs them in its own browser**, where the user signed in once (told once
+  that their terms limit automated use): the production writes the prompt blocks or the lyric and style fields and
+  sends them with `slop relay job --kind midjourney|suno`; Grok pastes, creates and downloads; the user only decides
+  (`50-plates-midjourney.md` §9, `10-song.md` §5).
 
 ## 3. Components
 
@@ -246,8 +245,8 @@ catalogue) · `examples/` (scrubbed exemplars from EV and SP).
 8. Spend gates: estimate before spend; `locked` + confirm; real spend from provider endpoints; on an owner quality flag
    stop all spending (`slop spend --freeze`).
 9. Never alter a declined reference to pass a safety filter (a decline is free, and final on that service). Never type
-   user credentials. Never automate Suno (the user presses Create and downloads). Never automate Midjourney unless the
-   user opted into browser assist and is signed in themselves.
+   user credentials. Browser work (Midjourney, Suno, Grok Imagine) is Grok's, on the user's own signed-in account;
+   the user never pastes, presses Create or downloads.
 10. Master: tagged **BT.709 primaries and matrix with the sRGB transfer (`iec61966-2-1`)**, as the source pipeline's
     encoder tagged it (the frames are sRGB canvas pixels), TV range, CRF ≤ 16, verified with ffprobe; flash check ≤ 3
     flashes a second.

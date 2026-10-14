@@ -3,9 +3,9 @@ name: plates
 description: Use when making the stills (plates) - the lead canon and test plates, the Midjourney prompt book and paste sheets, ingesting the owner's downloads, picking, varying, fixing a plate with an image edit, or API stills for the Quick tier.
 ---
 
-# Plates - lead, book, the owner pastes, ingest, picks, fixes
+# Plates - lead, book, Grok runs Midjourney, ingest, picks, fixes
 
-Midjourney (Studio, Director): read docs/50-plates-midjourney.md §1 first. Midjourney's terms forbid automation, so the owner pastes and downloads; you drive it only through skill browser-assist after their opt-in.
+Midjourney (Studio, Director): read docs/50-plates-midjourney.md §1 first. Grok runs the prompt blocks in its own browser and downloads every image (`slop relay job --kind midjourney`, §9); the owner only judges the picks.
 
 ## Lead first (G3)
 1. Write the canon with the owner (§5.1, §5.3): framing first, visible garments, ethnicity, age, skin; plus a short far version for wide shots. `slop --json -p NAME lead --canon '<canon>' --far '<far version>'`.

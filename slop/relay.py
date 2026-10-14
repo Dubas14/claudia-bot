@@ -12,7 +12,8 @@ One relay per bot, no project name needed. Grok's side:
 The production's side (it works in the projects folder and picks or creates the project itself):
   slop relay say TEXT [--show FILE ...]                          a message for the director
   slop relay ask QUESTION [--default X] [--show FILE ...]        one question, with its default
-  slop relay job --kind grok-imagine|person ...                  browser work for Grok, or a step only the person can
+  slop relay job --kind grok-imagine|midjourney|suno|browser|person ...   browser work for Grok (all of it), or a step
+                                                                 only the person can
                                                                  do; numbered J-0003
   slop relay inbox                                               new messages, marked read
 
@@ -636,19 +637,48 @@ def cmd_ask(a) -> dict:
 
 def _save_base(a, wd: Path) -> Path:
     """Where a job's downloads go by default: the production's project (-p / $SLOP_PROJECT / the folder it works in),
-    else the projects folder; then inbox/grok-imagine/ or inbox/person/."""
+    else the projects folder; then inbox/<kind>/."""
     try:
         return resolve_project(getattr(a, "project", None))
     except SlopError:
         return wd
 
 
+def _read_text(text: str | None, path: str | None, what: str) -> str | None:
+    if path:
+        if text:
+            raise SlopError(f"give the {what} as text or as a file, not both")
+        try:
+            return Path(path).expanduser().read_text(encoding="utf-8").strip()
+        except OSError as e:
+            raise SlopError(f"cannot read {path}: {e}") from None
+    return text
+
+
 def cmd_job(a) -> dict:
-    """(the production) ask Grok for browser work (grok-imagine), or the person for a step only they can do."""
+    """(the production) ask Grok for browser work: Grok Imagine, Midjourney, Suno or any other site, all in Grok's own
+    signed-in browser; --kind person only for what only a person can do (a sign-in Grok cannot finish)."""
     wd, rd = _dirs()
     base = _save_base(a, wd)
     rec: dict = {"kind": "job", "job_kind": a.kind, "what": a.what, "note": a.note}
-    if a.kind == "grok-imagine":
+    if a.kind == "midjourney":
+        if not a.text:
+            raise SlopError("a midjourney job needs its prompts: --text '<one full prompt with its parameters>', once "
+                            "per prompt (each becomes its own Midjourney job of four images)")
+        rec.update(text=list(a.text), expect_count=4 * len(a.text))
+    elif a.kind == "suno":
+        lyrics = _read_text(a.lyrics, a.lyrics_file, "lyrics")
+        if not (a.style or "").strip():
+            raise SlopError("a suno job needs --style '<the Style of Music field>'")
+        if not (lyrics or "").strip() and not a.instrumental:
+            raise SlopError("a suno job needs --lyrics / --lyrics-file, or --instrumental")
+        rec.update(title=a.title, style=a.style, lyrics=lyrics, exclude=a.exclude, instrumental=bool(a.instrumental),
+                   expect_count=2)
+    elif a.kind == "browser":
+        if not (a.note or "").strip():
+            raise SlopError("a browser job needs --note '<what Grok should do there, in one or two sentences>'")
+        rec.update(url=a.url, text=list(a.text or []))
+    elif a.kind == "grok-imagine":
         if a.what not in ("still", "clip"):
             raise SlopError("--what still|clip: what Grok Imagine should make")
         prompt = a.prompt
@@ -673,7 +703,8 @@ def cmd_job(a) -> dict:
             raise SlopError("a person job needs its copy blocks (--text, once per block) or a --note saying what to do")
         exp = [Path(e).expanduser() for e in a.expect or []]
         rec.update(text=list(a.text or []), expect=[str((e if e.is_absolute() else base / e).absolute()) for e in exp])
-        default_save = base / "inbox" / "person"
+    if a.kind != "grok-imagine":
+        default_save = base / "inbox" / a.kind
     save = Path(a.save).expanduser() if a.save else default_save
     save = (save if save.is_absolute() else base / save).absolute()
     save.mkdir(parents=True, exist_ok=True)
@@ -686,7 +717,7 @@ def cmd_job(a) -> dict:
                    name=a.name or jid, files=[], turn=_turn_no())
         _append(rd / "outbox.jsonl", {k: v for k, v in rec.items() if v is not None})
     _log(rd, f"out #{oid} job {jid} ({a.kind}{' ' + a.what if a.what else ''})")
-    who = "Grok runs it in its browser" if a.kind == "grok-imagine" else "Grok gives it to the person"
+    who = "Grok gives it to the person" if a.kind == "person" else "Grok runs it in its own browser"
     return {"id": oid, "job": jid, "save": str(save),
             "text": f"posted job {jid} ({a.kind}): {who}; the result comes back as an inbox message "
                     f"(\"[grok] {jid} done: files ...\"). End the turn now if nothing else can go on meanwhile."}
@@ -714,9 +745,12 @@ def cmd_done(a) -> dict:
         (files.append(str(hit)) if hit else missing.append(f))
     if missing:
         raise SlopError(f"--file: no such file: {', '.join(missing)} (save the downloads into {j.get('save')} first)")
-    if not files:
-        raise SlopError(f"name the saved files: slop --json relay done {j['job']} --file PATH [--file PATH ...]")
-    text = f"[grok] {j['job']} done: files " + ", ".join(files) + (f"\n{a.note}" if a.note else "")
+    if not files and not (j.get("job_kind") == "browser" and a.note):
+        raise SlopError(f"name the saved files: slop --json relay done {j['job']} --file PATH [--file PATH ...]"
+                        + (" (a browser job with no files: --note '<what you found or did>')"
+                           if j.get("job_kind") == "browser" else ""))
+    text = (f"[grok] {j['job']} done: files " + ", ".join(files) if files else f"[grok] {j['job']} done") \
+        + (f"\n{a.note}" if a.note else "")
     out = deliver(text, "grok", (j["job"], {"status": "done", "files": files, "ended": util.iso_now()}))
     out.update(job=j["job"], files=files, text=f"job {j['job']} done ({len(files)} file(s)); " + out["text"])
     return out
@@ -751,7 +785,8 @@ def _render_item(r: dict) -> str:
 
 
 JOB_FIELDS = ("id", "job", "job_kind", "what", "prompt", "image", "aspect", "seconds", "save", "name", "note", "text",
-              "expect", "status", "ts")
+              "expect", "title", "style", "lyrics", "exclude", "instrumental", "url", "expect_count", "status", "ts")
+SKILL_FOR = {"grok-imagine": "grok-imagine", "midjourney": "midjourney", "suno": "suno"}
 
 
 def _job_item(j: dict) -> dict:
@@ -777,8 +812,10 @@ def _grok_next(items: list, prod: dict, jobs: list) -> str:
         steps.append(("Post this message" if n == 1 else f"Post these {n} messages") + " verbatim"
                      + ((" with its files" if n == 1 else " with their files") if nf else ""))
     for j in jobs:
-        if j.get("job_kind") == "grok-imagine":
-            steps.append(f"run job {j['job']} with skill grok-imagine (save into {j.get('save')}, then `slop --json "
+        k = j.get("job_kind")
+        if k in SKILL_FOR or k == "browser":
+            how = f"skill {SKILL_FOR[k]}" if k in SKILL_FOR else "your browser, doing what its note says"
+            steps.append(f"run job {j['job']} with {how} (save into {j.get('save')}, then `slop --json "
                          f"relay done {j['job']} --file PATH`, or `slop --json relay fail {j['job']} --reason '...'`)")
         else:
             steps.append(f"give job {j['job']} to the person (its copy blocks verbatim; save what they upload"
@@ -1256,20 +1293,28 @@ def register(sub) -> None:
     p.add_argument("--show", nargs="+", metavar="FILE", help="files Grok shows with it")
     p.set_defaults(func=cmd_ask)
 
-    p = add("job", help="(the production) ask Grok for browser work (--kind grok-imagine) or the person for a step "
-                        "only they can do (--kind person: Suno, Midjourney, a sign-in)")
-    p.add_argument("--kind", choices=["grok-imagine", "person"], required=True)
-    p.add_argument("--what", help="grok-imagine: still | clip (person: a short label, e.g. song)")
+    p = add("job", help="(the production) ask Grok for browser work, all of it in Grok's own signed-in browser "
+                        "(--kind grok-imagine | midjourney | suno | browser); --kind person only for what only a "
+                        "person can do")
+    p.add_argument("--kind", choices=["grok-imagine", "midjourney", "suno", "browser", "person"], required=True)
+    p.add_argument("--what", help="grok-imagine: still | clip (others: a short label, e.g. plates, song)")
     p.add_argument("--prompt", help="grok-imagine: the prompt, verbatim")
     p.add_argument("--prompt-file", help="grok-imagine: read the prompt from this file")
     p.add_argument("--image", help="grok-imagine: a start image (must exist)")
     p.add_argument("--aspect", choices=["16:9", "9:16", "1:1", "2:3", "3:2"])
     p.add_argument("--seconds", type=int, help="grok-imagine clip length")
-    p.add_argument("--save", help="where the downloads go (default: the project's inbox/grok-imagine/ or "
-                                  "inbox/person/)")
+    p.add_argument("--save", help="where the downloads go (default: the project's inbox/<kind>/)")
     p.add_argument("--name", help="file stem for the downloads (default: the job id)")
     p.add_argument("--note", help="one line for Grok or the person")
-    p.add_argument("--text", action="append", help="person: a copy block to show verbatim (repeat per block)")
+    p.add_argument("--text", action="append", help="midjourney: one full prompt per --text (each is its own "
+                                                   "Midjourney job); browser: text to paste; person: a copy block")
+    p.add_argument("--title", help="suno: the song title")
+    p.add_argument("--style", help="suno: the Style of Music field, verbatim")
+    p.add_argument("--lyrics", help="suno: the lyrics field, verbatim")
+    p.add_argument("--lyrics-file", help="suno: read the lyrics field from this file")
+    p.add_argument("--exclude", help="suno: the Exclude styles field")
+    p.add_argument("--instrumental", action="store_true", help="suno: an instrumental (no lyrics)")
+    p.add_argument("--url", help="browser: the page to start on")
     p.add_argument("--expect", action="append", help="person: where their upload is saved (repeatable)")
     p.set_defaults(func=cmd_job)
 

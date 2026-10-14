@@ -83,7 +83,7 @@ def test_setup_registers_the_mcp_installs_the_skill_and_writes_the_brief(tmp_pat
         assert text.startswith("<!-- slop relay: production brief") and "\r" not in text
         assert "claudia_canon" in text and "Silence never approves spending" in text and "{{" not in text
         assert "slop relay say" in text and "slop relay inbox" in text
-        assert "slop -p NAME relay job --kind grok-imagine" in text and "relay job --kind person" in text
+        assert "slop -p NAME relay job --kind grok-imagine" in text and "--kind midjourney" in text and "--kind person" in text
     skills = env["home"] / ".claude" / "skills"
     assert (skills / "claudia" / "SKILL.md").is_file() and not (skills.parent / "evil.txt").exists()
     assert out["skill"]["skills"] == ["claudia"]

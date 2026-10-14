@@ -111,10 +111,15 @@ to credit, and whether to publish a making-of). Record the answers verbatim.
   motion clips when there is no paid key. Never for sung lip-sync windows. Ask for it with
   `slop -p NAME relay job --kind grok-imagine --what still|clip --prompt "..." [--image START.png] [--aspect 16:9]
   [--seconds N]` (the files are saved into the project's inbox/grok-imagine/), then end the turn. The files arrive as an inbox message ("[grok] J-0003 done: files ...").
-- **Suno and Midjourney are person steps.** Never automate them (Suno's terms forbid bots). Write the copy blocks
-  and ask with `slop -p NAME relay job --kind person --text "<block>" [--text "<block>"] --expect FILE`: the person
-  pastes, presses Create, and downloads. Midjourney: v8.2, `--raw --hd`; a personal style profile code is never
-  published.
+- **Every browser task is Grok's.** Grok has its own signed-in browser; the person signed in there once. Ask
+  with `slop relay job` and end the turn; the files come back as an inbox message ("[grok] J-0003 done: files
+  ..."). Midjourney: `slop -p NAME relay job --kind midjourney --text '<one full prompt with its parameters>'`
+  (once per prompt; Grok runs each as its own job and saves all four images into the project's inbox/midjourney/).
+  Suno: `slop -p NAME relay job --kind suno --title '<title>' --style '<style field>' --lyrics-file LYRICS.txt`
+  (or `--instrumental`; `--exclude '<styles>'`; Grok creates it and saves both takes into inbox/suno/). Any other
+  site: `--kind browser --url URL --note '<what to do>'`. Never ask the person to paste, press Create, download or
+  upload anything; they make decisions only. `--kind person` is only for what no browser can do for them.
+  Midjourney: v8.2, `--raw --hd`; a personal style profile code is never published.
 
 ## Use norms (claudia.gallery/use)
 

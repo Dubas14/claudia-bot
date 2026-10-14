@@ -94,12 +94,12 @@ plates pass checkpoint 3.
 
 ---
 
-## 4. The people's steps the bot never automates
+## 4. Browser work is Grok's
 
-- **Suno.** The terms forbid bots. The bot writes the lyric and style fields as copy blocks (`10-song.md` §4.6); the
-  person presses Create, listens, and downloads the WAV. Downloading on a paid plan is what allows commercial use.
-- **Midjourney.** The bot writes the prompt blocks (`slop plates book`); the person pastes them, picks and downloads.
-  A personal style profile code is never published.
+- **Suno.** Opus writes the lyric and style fields (`10-song.md` §4.6); Grok creates the song in its own browser, on
+  the person's account, and downloads both takes. Downloading on a paid plan is what allows commercial use.
+- **Midjourney.** Opus writes the prompt blocks (`slop plates book`); Grok runs them in its browser and downloads every
+  image. A personal style profile code is never published.
 - **Grok Imagine** on grok.com runs through Grok's browser with the person's own X login: Opus asks with `slop relay job --kind grok-imagine` (`96-relay.md`).
 - Sign-ins, captchas and two-factor prompts are always the person's.
 

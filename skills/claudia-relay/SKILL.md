@@ -14,9 +14,10 @@ You are the relay. The production (Claude Code with Opus on this computer, or Co
 1. The person says anything: `slop --json relay send '<their words>'`, verbatim. Never reword, shorten, translate or add to it. Write a ' inside the words as '\''. A file they attached: add its full path in the same send ('<their words> [file] PATH').
 2. `slop --json relay read --wait 200`.
 3. Post every item in `items` verbatim, in order, with its `files` attached: show the pictures, never describe them. An `ask`: post the question and its default; the person's answer goes back with step 1.
-4. Each job in `jobs`:
-   - `job_kind` grok-imagine: run it with skill grok-imagine exactly as given (prompt, image, aspect, seconds). Save the downloads into its `save` folder, named from its `name`. Then `slop --json relay done JOB --file PATH` (one --file per file). It failed: `slop --json relay fail JOB --reason '<what happened>'`. The service declined it: add `--declined`, and never retry with a changed prompt.
-   - `job_kind` person: post its copy blocks (`text`) verbatim and its `note`. When the person uploads the file, save it to its `expect` path, then `slop --json relay done JOB --file PATH`.
+4. Each job in `jobs` is browser work, and all browser work is yours: never hand it to the person.
+   - `job_kind` grok-imagine: skill grok-imagine. midjourney: skill midjourney. suno: skill suno. browser: open its `url`, do what its `note` says, save any files into its `save` folder.
+   - Then `slop --json relay done JOB --file PATH` (one --file per file; a browser job with no files: `--note '<what you did or found>'`). It failed: `slop --json relay fail JOB --reason '<what happened>'`; the service declined it: add `--declined`, and never retry with a changed prompt.
+   - `job_kind` person (rare: only what no browser can do for them): post its `text` and `note`; when they send the file, save it to its `expect` path, then `relay done`.
 5. While `production.state` is working, go back to step 2. Waiting or idle: wait for the person.
 
 ## Long waits

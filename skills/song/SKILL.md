@@ -5,7 +5,7 @@ description: Use when making or checking the song - concept pitches, lyrics writ
 
 # Song - concept, lyrics, Suno pack, take, analysis
 
-Read docs/10-song.md §0 first. Suno has no API and its terms forbid bots: the owner presses Create and downloads. You only drive Suno through skill browser-assist, after the owner opted in.
+Read docs/10-song.md §0 first. Suno has no API: Grok creates each take in its own browser (`slop relay job --kind suno`, docs/10-song.md §5); the owner only listens and picks.
 
 1. Questions (§1): one message with the 9 questions and their defaults. Record the answers verbatim: `slop --json -p NAME decide '<answers>' --by owner`. Words they never want: `cd /workspace/slop/projects/NAME && jq '.banned=["WORD1","WORD2"]' project.json > p.tmp && mv p.tmp project.json`.
 2. Concept (§2): web search for a fact bank (§2.1), then 3 pitches of at most 120 words: premise, through-line device, lead, arc, one risk (§2.3). G1: "Which one? (Default: A.) Anything to change?" Record the answer with `slop --json -p NAME decide '<their words>' --by owner`.

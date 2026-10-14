@@ -31,8 +31,8 @@ input that stores a secret as an environment variable on the box.
    it runs the two installs detached, so no shell call times out.
 3. **Keys** through the secure secret card: `OPENROUTER_API_KEY` (with its own credit limit), optional `ARENA_TOKEN`.
 4. **Connectors** the bot sees: Higgsfield (sung clips on the user's credits), optional Google Drive.
-5. **Music and stills plans**: Suno plan (the user presses Create and downloads; Suno is never automated), Midjourney
-   plan and personal profile code (never published), a Midjourney browser-assist sign-in only if the user asks for it.
+5. **Music and stills plans**: Suno plan and Midjourney plan and personal profile code (never published); the user
+   signs in to each once in Grok's browser, and from then on Grok runs them.
 6. **Coding-agent plans** (asked in every tier): Claude, ChatGPT (Codex), Meta (Muse Code), Google (Gemini), none.
    Each plan the user has becomes a recommended item: install and sign in that agent on the box.
 7. **Home GPU** (asked in every tier): paired, direct or none.

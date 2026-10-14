@@ -24,12 +24,12 @@ SearchPlugins for Google Drive; missing and wanted: the same widget rule. List o
 
 ## Suno (items suno, suno-signin; docs/10-song.md §8)
 1. The plan: `slop --json onboard set suno-plan pro` (free, pro, premier or none). Free: songs are non-commercial; offer Lyria (needs OpenRouter) or an upgrade. None: Lyria, or their own song file.
-2. Suno has no API and its terms forbid bots: the person presses Create and downloads the WAV themselves (a paid plan is what allows commercial use). Opus writes the lyric and the style fields; you show them as copy blocks (a relay job of kind person). So: `slop --json onboard mark suno-signin --skip`.
+2. Sign-in: open https://suno.com in your browser; the person signs in there once (you never type passwords). Say once: "Heads-up: Suno's terms limit automated use; I only make songs when you or Opus ask, on your account." You see their library: `slop --json onboard mark suno-signin --done`. From then on you run Suno for Opus (skill suno).
 
 ## Midjourney (items midjourney, mj-profile, mj-signin; docs/50-plates-midjourney.md §2.1 and §2.2)
 1. The plan: `slop --json onboard set mj-plan standard` (basic, standard, pro, mega or none); it sizes each paste.
 2. Their personal profile code (their look; never anyone else's): they make a profile as §2.2 says (Personalize, a V8 profile, one test prompt; the code shows on the job). Record it: `slop --json onboard set mj-profile CODE`. It stays in their user settings; never post it. Per project: `slop --json -p NAME onboard apply`. No profile yet: plates look generic; say so once and offer to wait.
-3. The person pastes Opus's prompt blocks into Midjourney and downloads the picks; you never automate it: `slop --json onboard mark mj-signin --skip`.
+3. Sign-in: open https://www.midjourney.com in your browser; the person signs in there once, with the same one-line heads-up. You see their Create page: `slop --json onboard mark mj-signin --done`. From then on you run Midjourney for Opus (skill midjourney).
 
 ## Are.na (item arena; optional; docs/30-taste.md §2.4)
 Only if they keep their own channels there (for the taste pool). They create a personal access token on Are.na's developer page (dev.are.na); ask with the masked secure secret card named ARENA_TOKEN; `slop --json onboard next` sees it.

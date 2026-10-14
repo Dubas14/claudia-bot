@@ -53,8 +53,9 @@ tier uses the image-edit model for fixes (§12).
 12. **One image per shot.** The 3 unpicked candidates of every job are a free variety pool (§11).
 13. **Fix the source, never the frame.** A wrong detail is fixed in the MJ prompt (re-roll) or with the image-edit model
     (§12), never painted by hand or in engine code.
-14. **Midjourney is human-in-the-loop by default.** The bot writes paste-ready sheets; the owner pastes, picks,
-    downloads and uploads. Browser assist is opt-in only, with a written ToS warning, and the owner signs in themselves (§9).
+14. **Grok runs Midjourney.** The production writes the prompt blocks and sends them with `slop relay job --kind
+    midjourney`; Grok pastes each one in its own browser, where the owner signed in once, and downloads every image
+    (§9). The owner judges the picks; they never paste or download.
 15. **The project's banned-words list applies to prompts too** (BRIEF / `project.json`). `slop board audit` checks it
     on the board's prompts; read every prompt against the lint checklist (§7.3) before the owner sees the book.
 
@@ -618,34 +619,25 @@ characters, or use Sheet A for it.
 
 ---
 
-## 9. Opt-in browser assist (only if the owner asks for it)
+## 9. Grok runs Midjourney in its browser
 
-Some owners want the bot to do the pasting. That breaks Midjourney's terms (automated tools may not access or generate on
-the service; the community guidelines say automating interactions is "strictly prohibited" and accounts may be blocked).
-It is **off by default** and offered only when the owner asks.
+Grok does the pasting and the downloading, in its own browser, on the owner's account (skill midjourney). At sign-in the
+owner is told once that Midjourney's terms limit automated use, that Grok will never type, read or store your
+password, and that logins in Grok's browser stay on the bot's computer for every bot that runs on it.
 
-Before enabling it, send this warning and wait for an explicit yes (record it in `DECISIONS.md` with the date):
+Rules:
 
-> **Browser assist for Midjourney — please read.** Midjourney's terms forbid automated tools. If I type prompts into
-> midjourney.com for you, your account may be suspended or banned, and Midjourney allows one account per person. You
-> sign in yourself; I will never type, read or store your password, and I stop at any captcha, Cloudflare check or
-> two-factor prompt. Logins in my browser stay saved on this computer and are shared by every bot and routine that runs
-> on it — sign out when we are done if that matters to you. Reply "I accept the risk" to turn this on for this project,
-> or "no" to keep pasting yourself.
-
-Rules once enabled:
-
-1. **The owner signs in** in the bot's browser (typing it themselves, or approving their password manager's fill). The
-   bot never enters credentials, never solves a captcha, a Cloudflare check or 2FA: it stops and hands the browser back.
-2. **The owner approves each batch in chat** before the bot submits it; the bot shows the sheet and the expected job
-   count first.
+1. **The owner signs in** in Grok's browser (typing it themselves, or approving their password manager's fill). Grok
+   never enters credentials, never solves a captcha, a Cloudflare check or 2FA: it stops and hands the browser back.
+2. **Batches come from the production** as `slop relay job --kind midjourney`, one `--text` per prompt, after the board
+   is approved; Grok checks the image count against 4 x prompts.
 3. One batch at a time, one tab, the batch folder open (§8.1). For permutations, read the confirmation count and click
    Yes only if it equals the expected number.
 4. **Identify every job by its own prompt text, never by position** (a stray re-run once shifted 16 jobs by one while
    the count still matched). Check each job carries the right profile; a wrong-profile job is not ingested.
 5. Downloads go through the site's own Download button only (§10.1). Never fetch images with exported cookies.
 6. Stop at anything unexpected (a dialog, a changed layout, an error toast) and ask. Never retry a login or a payment.
-7. An owner can also teach their own UI by demonstration (Grok Bot's "Teach a task" recording). The same warning applies.
+7. An owner can also teach their own UI by demonstration (Grok Bot's "Teach a task" recording).
 
 ---
 

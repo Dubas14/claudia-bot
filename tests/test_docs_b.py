@@ -229,7 +229,7 @@ def test_mj_facts():
         "--ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>", "Never a bare `--p`", "Global V7", "unlocks",
         "New Profile", "code pins one version", "Personalization toggle OFF", "`--oref`", "Edit Model",
         "≤ 4 (Basic), ≤ 10 (Standard), ≤ 40 (Pro, Mega)", r"`\,`", "variety pool", "`lead.far`", "`lead.possessive`",
-        "Caucasian American", "2944×1648", "1456×816", "no text, no letters, no logos", "I accept the risk",
+        "Caucasian American", "2944×1648", "1456×816", "no text, no letters, no logos", "Grok runs Midjourney in its browser",
         "never type, read or store your password", "never by position", "plates/picks.json", "cand_k",
         "Casting call", "single-variable", "one batch at a time", "Fix the source", "G3",
     ]:

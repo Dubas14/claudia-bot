@@ -728,9 +728,9 @@ Expected length: about <M:SS> (Suno often runs longer than planned).
 
 ## 5. Generating and auditioning takes (the owner's ear is the metric)
 
-The bot writes, the owner generates and listens. Suno's terms forbid bots, so this is the only way: the bot writes the
-lyric and style fields as copy blocks (§4.6), and the owner presses Create, auditions in the player and downloads the
-WAV. The bot never drives suno.com, even when asked.
+The production writes, Grok generates, the owner listens. The production writes the lyric and style fields (§4.6)
+and asks Grok with `slop relay job --kind suno`; Grok creates the song on suno.com in its own browser, where the owner
+signed in once, and downloads both takes through Suno's own Download button. The owner auditions and names the take.
 
 ### 5.1 Rounds
 
@@ -862,8 +862,8 @@ procedure that follows from it:
    Basic outputs are for personal, non-commercial use; trial downloads are not commercial. Rights from a download
    survive cancelling or running out of downloads.
 2. **No robots or scraping, and no other way of obtaining audio** than Suno's download channel (no CDN fetch, no
-   stream ripping, no recording). The template therefore never drives suno.com and never fetches audio: the owner
-   presses Create and downloads.
+   stream ripping, no recording). Grok works only on the owner's own signed-in account, at their request, and gets
+   audio only through Suno's Download button; the owner is told once, at sign-in, that the terms limit automated use.
 3. **Output-use clause (flag it):** the terms say outputs must not be used to power, enable or train other AI tools.
    It is ambiguous whether feeding the master into the video pipeline (stem separation, alignment, a video model's
    audio reference) counts. Tell the owner, and recommend a legal reading before they monetise.
