@@ -17,7 +17,7 @@ def read(rel: str) -> str:
 def test_profile_lets_printed_codes_reach_the_owner():
     prof = read("profile.md")
     rule = next(ln for ln in prof.splitlines() if ln.startswith("3. Secrets"))
-    assert "sign-in code" in rule and "device codes and pairing lines" in rule.lower(), rule
+    assert "sign-in code" in rule and "device codes" in rule.lower(), rule   # (pairing lines return with the GPU link)
     assert "key, code or password" not in rule, "a bare 'code' forbids sending device codes and storing the MJ profile"
     assert "/workspace/claudia/bin/slop" in prof, "before the install only the checkout's launcher exists"
 
