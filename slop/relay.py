@@ -64,6 +64,7 @@ DEFAULT_MODEL = {"claude": "opus", "codex": None}
 WAIT_CAP_S = 240.0
 READ_SETTLE = 5                # a production that stops working must stay stopped this many polls (2 s) to end a wait
 WAKE_KEY_ENV = "CLAUDIA_WAKE_KEY"   # the wake-up routine's webhook key: a masked secure secret card, never a file
+WAKE_BASE = "https://api2.cursor.sh"   # Grok Bot's backend: a routine's webhook is <backend>/automations/webhook/<id>
 WAKE_QUIET_S = 8.0             # posts in a burst (a say, then an ask) wake Grok once
 WAKE_TICK_S = 2.0
 WAKE_RETRY_S = (30.0, 120.0)   # a failed wake-up is tried again after these, then given up for that batch
@@ -703,6 +704,18 @@ def _save_base(a, wd: Path) -> Path:
         return wd
 
 
+def _job_path(p: str | Path, base: Path, wd: Path) -> Path:
+    """A path a job names. Relative: to the project, unless it already starts at the projects folder (the production
+    works there, so `NAME/inbox` from it is the project's inbox, never NAME/NAME/inbox)."""
+    q = Path(p).expanduser()
+    if q.is_absolute():
+        return q.absolute()
+    via_wd, proj = (wd / q).absolute(), base.absolute()
+    if proj != wd.absolute() and (via_wd == proj or proj in via_wd.parents):
+        return via_wd
+    return (base / q).absolute()
+
+
 def _read_text(text: str | None, path: str | None, what: str) -> str | None:
     if path:
         if text:
@@ -786,12 +799,10 @@ def cmd_job(a) -> dict:
     else:
         if not a.text and not a.note:
             raise SlopError("a person job needs its copy blocks (--text, once per block) or a --note saying what to do")
-        exp = [Path(e).expanduser() for e in a.expect or []]
-        rec.update(text=list(a.text or []), expect=[str((e if e.is_absolute() else base / e).absolute()) for e in exp])
+        rec.update(text=list(a.text or []), expect=[str(_job_path(e, base, wd)) for e in a.expect or []])
     if a.kind != "grok-imagine":
         default_save = base / "inbox" / a.kind
-    save = Path(a.save).expanduser() if a.save else default_save
-    save = (save if save.is_absolute() else base / save).absolute()
+    save = _job_path(a.save, base, wd) if a.save else default_save.absolute()
     save.mkdir(parents=True, exist_ok=True)
     for e in rec.get("expect") or []:
         Path(e).parent.mkdir(parents=True, exist_ok=True)
@@ -826,6 +837,32 @@ def _open_job(rd: Path, jid: str) -> dict:
     raise SlopError(f"no job {jid} (open jobs: {', '.join(x['job'] for x in _jobs(rd)) or 'none'})")
 
 
+def _media_size(path: Path) -> str | None:
+    """'1280x704' for a picture or a clip (ffprobe, else Pillow for pictures); None when unknown."""
+    import shutil
+    exe = shutil.which("ffprobe")
+    if exe:
+        try:
+            r = subprocess.run([exe, "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+                                "-of", "csv=s=x:p=0", str(path)], capture_output=True, text=True, timeout=30)
+            m = re.match(r"(\d+)x(\d+)", (r.stdout or "").strip())
+            if m and int(m.group(1)) > 0 and int(m.group(2)) > 0:     # a broken file reads as 0x0: unknown
+                return f"{m.group(1)}x{m.group(2)}"
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return f"{im.width}x{im.height}" if im.width and im.height else None
+    except Exception:  # noqa: BLE001 - not a picture, or no Pillow
+        return None
+
+
+def _area(size: str) -> int:
+    w, h = size.split("x")
+    return int(w) * int(h)
+
+
 def cmd_done(a) -> dict:
     """(Grok) a job's files are saved: mark it done and tell the production (a turn starts when it is idle)."""
     wd, rd = _dirs()
@@ -840,10 +877,22 @@ def cmd_done(a) -> dict:
         raise SlopError(f"name the saved files: slop --json relay done {j['job']} --file PATH [--file PATH ...]"
                         + (" (a browser job with no files: --note '<what you found or did>')"
                            if j.get("job_kind") == "browser" else ""))
+    sizes = {f: s for f in files if (s := _media_size(Path(f)))}      # the real pixel size, for the production
+    top = max((_area(s) for s in sizes.values()), default=0)
+    small = [f for f, s in sizes.items() if _area(s) < 0.8 * top]
     text = (f"[grok] {j['job']} done: files " + ", ".join(files) if files else f"[grok] {j['job']} done") \
+        + ("\nsizes: " + ", ".join(f"{Path(f).name} {s}" for f, s in sizes.items()) if sizes else "") \
         + (f"\n{a.note}" if a.note else "")
-    out = deliver(text, "grok", (j["job"], {"status": "done", "files": files, "ended": util.iso_now()}))
-    out.update(job=j["job"], files=files, text=f"job {j['job']} done ({len(files)} file(s)); " + out["text"])
+    out = deliver(text, "grok", (j["job"], {"status": "done", "files": files, "sizes": sizes or None,
+                                             "ended": util.iso_now()}))
+    out.update(job=j["job"], files=files, sizes=sizes,
+               text=f"job {j['job']} done ({len(files)} file(s)"
+                    + (f", {', '.join(sorted(set(sizes.values())))}" if sizes else "") + "); " + out["text"])
+    if small:
+        out["warn"] = (f"{', '.join(Path(f).name for f in small)} came out smaller than the rest: the page may have "
+                       "rendered a lower resolution than it showed. Before the next Generate, switch the resolution "
+                       "down and back up")
+        out["text"] += "\nwarning: " + out["warn"]
     return out
 
 
@@ -1410,16 +1459,28 @@ def _mask_url(url: str | None) -> str:
     return f"{u.scheme}://{u.hostname}/...{(u.path or '')[-4:]}" if u.scheme and u.hostname else ""
 
 
-def _wake_url(text: str) -> str:
-    """The routine's webhook URL from whatever was pasted ("POST to https://...", quotes, a trailing dot)."""
-    from urllib.parse import urlsplit
-    m = re.search(r"https?://[^\s\"'<>`]+", text or "")
+def _wake_url(text: str) -> tuple[str, bool]:
+    """The routine's webhook URL from what Grok passes -> (url, built). Its POST to address as pasted ("POST to
+    https://...", quotes, a trailing dot); or Grok's own link to the routine (grokbot://app/v1/agent?...&automation=ID,
+    or the routine's id alone): the app builds the URL as <backend>/automations/webhook/<id>, and so does this
+    ($CLAUDIA_WAKE_BASE overrides the backend)."""
+    from urllib.parse import quote, urlsplit
+    text = (text or "").strip()
+    m = re.search(r"https?://[^\s\"'<>`]+", text)
     url = m.group(0).rstrip(".,;:)]}") if m else ""
+    rid = None
+    if "/automations/webhook/" not in url:
+        hit = re.search(r"[?&#;]automation(?:Id|_id)?=([A-Za-z0-9_-]{4,128})", text)
+        rid = hit.group(1) if hit else (text if re.fullmatch(r"[A-Za-z0-9_-]{8,128}", text) else None)
+    if rid:
+        base = os.environ.get("CLAUDIA_WAKE_BASE", "").strip().rstrip("/") or WAKE_BASE
+        url = f"{base}/automations/webhook/{quote(rid, safe='')}"
     u = urlsplit(url)
     local = u.hostname in ("127.0.0.1", "localhost", "::1")
     if not u.hostname or not (u.scheme == "https" or (u.scheme == "http" and local)):
-        raise SlopError("paste the routine's webhook URL (its POST to field, https://...), or say off or test")
-    return url
+        raise SlopError("give your link to the routine (it carries automation=...), or its POST to address "
+                        "(https://...), or say off or test")
+    return url, bool(rid)
 
 
 def _wake_key() -> str:
@@ -1462,6 +1523,9 @@ def wake_send(rd: Path, event: str, unread: list[dict] | None = None) -> dict:
     ok = status is not None and 200 <= status < 300
     err = None if ok else (err or f"HTTP {status}" + (" (is the key in the secure secret card "
                                                        f"{WAKE_KEY_ENV}?)" if status in (401, 403) else ""))
+    if err and cfg.get("built") and status not in (401, 403):
+        err += ("; the URL was built from the routine's id: ask the person for the routine's POST to address "
+                "(Webhook URL) and run `slop --json relay wake '<what they pasted>'`")
     cfg = _read_json(rd / "wake.json")
     cfg["last"] = {"at": util.iso_now(), "event": event, "unread": len(unread), "ok": ok, "status": status,
                    "error": err}
@@ -1548,12 +1612,14 @@ def cmd_wake(a) -> dict:
         if not r["ok"] and not _read_json(rd / "wake.json").get("url"):
             raise SlopError(r["error"])
     elif arg:
-        url = _wake_url(arg)
+        url, built = _wake_url(arg)
         rows = _rows(rd / "outbox.jsonl")
         cfg = _read_json(rd / "wake.json")
-        cfg.update(url=url, set=util.iso_now(), woken_id=max((int(r.get("id") or 0) for r in rows), default=0))
+        cfg.update(url=url, built=built, set=util.iso_now(),
+                   woken_id=max((int(r.get("id") or 0) for r in rows), default=0))
         _write_json(rd / "wake.json", cfg)
-        head = f"wake-ups on: {_mask_url(url)}; next: slop --json relay wake test"
+        head = (f"wake-ups on: {_mask_url(url)}" + (" (built from the routine's id)" if built else "")
+                + "; next: the key in the secure card, then slop --json relay wake test")
         _log(rd, f"wake: on ({_mask_url(url)})")
     cfg = _read_json(rd / "wake.json")
     on, key = bool(cfg.get("url")), bool(_wake_key())

@@ -74,6 +74,42 @@ def test_grok_sees_every_field_of_a_job(tmp_path, monkeypatch):
         assert want in r["text"], want
 
 
+def test_done_reports_each_files_real_size(tmp_path, monkeypatch):
+    """Grok Imagine's button can show 720p and still render 480p: the production learns each file's real size, and
+    Grok is warned about a file that came out smaller than the rest (by area, so a portrait still is no warning)."""
+    from PIL import Image
+    env = RT.setup(tmp_path, monkeypatch)
+    assert K.run("relay", "setup")[0] == 0
+    rc, out = K.run("relay", "job", "--kind", "grok-imagine", "--what", "still", "--prompt", "her on a rooftop")
+    assert rc == 0, out
+    save = Path(out["save"])
+    for name, size in (("a.png", (1280, 704)), ("b.png", (704, 1280)), ("c.png", (736, 400))):
+        Image.new("RGB", size, (20, 20, 20)).save(save / name)
+    rc, done = K.run("relay", "done", out["job"], "--file", "a.png", "--file", "b.png", "--file", "c.png")
+    assert rc == 0, done
+    assert done["sizes"] == {str(save / "a.png"): "1280x704", str(save / "b.png"): "704x1280",
+                             str(save / "c.png"): "736x400"}
+    assert "c.png" in done["warn"] and "a.png" not in done["warn"] and "b.png" not in done["warn"]
+    msg = [json.loads(x) for x in (env["rd"] / "inbox.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()][-1]
+    assert "\nsizes: a.png 1280x704, b.png 704x1280, c.png 736x400" in msg["text"]
+
+
+def test_a_save_path_from_the_projects_folder_is_not_doubled(tmp_path, monkeypatch):
+    env = RT.setup(tmp_path, monkeypatch)
+    assert K.run("new", "announce")[0] == 0
+    assert K.run("relay", "setup")[0] == 0
+    proj = env["wd"] / "announce"
+    for save, want in (("announce/inbox/hd", proj / "inbox" / "hd"), ("inbox/hd2", proj / "inbox" / "hd2"),
+                       (str(tmp_path / "abs"), tmp_path / "abs")):
+        rc, out = K.run("-p", "announce", "relay", "job", "--kind", "grok-imagine", "--what", "still", "--prompt",
+                        "x", "--save", save)
+        assert rc == 0 and Path(out["save"]) == want.absolute(), (save, out["save"])
+    rc, out = K.run("-p", "announce", "relay", "job", "--kind", "person", "--text", "x", "--expect",
+                    "announce/song/take.wav")
+    rc, r = K.run("relay", "read")
+    assert r["jobs"][-1]["expect"] == [str((proj / "song" / "take.wav").absolute())]
+
+
 def test_a_changed_brief_is_read_again(tmp_path, monkeypatch):
     monkeypatch.setenv("SLOP_HOME", str(tmp_path / "home"))
     (tmp_path / "home" / "relay").mkdir(parents=True)

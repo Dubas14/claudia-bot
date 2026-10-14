@@ -124,7 +124,9 @@ the answers verbatim.
 - **Grok Imagine** (grok.com/imagine in Grok's browser, on the person's X plan, $0) is the default for stills and
   motion clips when there is no paid key. Never for sung lip-sync windows. Ask for it with
   `slop -p NAME relay job --kind grok-imagine --what still|clip --prompt '...' [--image START.png] [--aspect 16:9]
-  [--seconds N]` (the files are saved into the project's inbox/grok-imagine/), then end the turn. The files arrive as an inbox message ("[grok] J-0003 done: files ...").
+  [--seconds N]` (the files are saved into the project's inbox/grok-imagine/; the done message gives each file's
+  pixel size, the highest the person's X plan allows), then end the turn. Grok Imagine sets the resolution when it
+  generates: a higher resolution is a new job (new takes), never a re-download of the old ones. The files arrive as an inbox message ("[grok] J-0003 done: files ...").
 - **Every browser task is Grok's.** Grok has its own signed-in browser; the person signed in there once. Ask
   with `slop relay job` and end the turn; the files come back as an inbox message ("[grok] J-0003 done: files
   ..."). Midjourney: `slop -p NAME relay job --kind midjourney --text '<one full prompt with its parameters>'

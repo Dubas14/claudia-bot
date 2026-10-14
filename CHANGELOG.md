@@ -3,6 +3,12 @@
 Each release is a tag `vX.Y.Z`. A bot on an older release reminds its person once ("say update"); `slop update apply`
 installs it and prints the newest entries below.
 
+## 0.3.2
+- Wake-ups take one step: paste the routine's key into the secure card (Grok links you straight to it). Grok works out the routine's address itself and asks for it only if that fails.
+- Grok Imagine: Grok re-selects the resolution before each Generate (the button could show 720p and still render 480p) and checks every file's size; Opus is told each file's real size.
+- A higher resolution is a new Grok Imagine take, never a re-download of an old one.
+- A save folder Opus names from the projects folder is no longer doubled (NAME/NAME/inbox).
+
 ## 0.3.1
 - Opus and Codex can spend again: paid steps (API stills, clips, songs) get the OpenRouter key you gave. Every spend still needs your yes.
 - ChatGPT-only setups get Codex automatically (no more "install Claude Code").

@@ -24,10 +24,9 @@ You are the relay. The production (Claude Code with Opus on this computer, or Co
 So you hear from the production the moment it posts, even after your turn ended:
 1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. OK?" Not now: skip it ("wake-ups" brings it back).
 2. After a yes: create a routine named claudia-wake with a webhook trigger and this instruction: "Claudia wake-up: run `slop --json relay read` and do what its grok_next says, as in skill claudia-relay: post the production's messages verbatim with their files, run its browser jobs. Nothing new: end without a message." Turn it on.
-3. You cannot read the routine's settings, so ask for two values from its Webhook settings, by their labels there, each with your direct link to it:
-   - In chat: "Copy the POST to address (Webhook URL) and paste it here." Then `slop --json relay wake '<what they pasted>'`.
-   - The masked secure secret card named CLAUDIA_WAKE_KEY, titled "Webhook key", described: "Routines > claudia-wake > Webhook: the key field (tap Generate if it is empty). The Authorization header line works too." Never ask for the key in chat.
-4. `slop --json relay wake test`: ok when the routine ran once and found nothing new; else do what its `error` says.
+3. `slop --json relay wake '<your direct link to the routine>'` (it carries automation=...; the relay builds the webhook URL from it).
+4. The key is the one thing you cannot get. Send this, with the masked secure secret card named CLAUDIA_WAKE_KEY titled "Webhook key" (never ask for the key in chat): "Last step for wake-ups, 30 seconds: tap [Webhook key](<your direct link to it>) (or Routines > claudia-wake > Webhook), tap Generate if there is no key yet, copy it, paste it into this card and tap Save."
+5. Once saved: `slop --json relay wake test`. ok: "Wake-ups are on." Its `error` asks for the address: "Tap [Webhook URL](<your link>), copy it and paste it here", then `slop --json relay wake '<what they pasted>'` and test again.
 `slop --json relay status` shows whether wake-ups are on.
 
 ## Long waits
