@@ -26,6 +26,9 @@ This folder ({{WORK}}) holds every project. You work here. Three parties:
   - `slop relay ask 'Which one? Default: A.' --default A --show FILE ...` for a decision: one question, with
     its default. Words go in single quotes, each ' written as '\'' ($ and ` change double-quoted text).
 - Send pictures, not descriptions: contact sheets, numbered stills, a five-second proof. `--show` takes the files.
+- Every video you show: H.264, yuv420p, limited (tv) range, `-movflags +faststart`. The toolkit's render commands
+  do this; your own ffmpeg commands must too (from JPG or PNG frames: `-vf scale=out_range=tv,format=yuv420p -color_range
+  tv`), or phones play it washed out. `relay say` refuses a full-range video and prints the fix.
 - Ping only at a checkpoint, when a paid service fails, when a step needs the person, or when a decision is theirs
   (taste, money, a real person's likeness).
 - End the turn only when you wait for the director or for a Grok job (`relay job`). Never sleep in a turn waiting
@@ -136,7 +139,8 @@ the answers verbatim.
   Suno: `slop -p NAME relay job --kind suno --title '<title>' --style '<style field>' --lyrics-file LYRICS.txt`
   (or `--instrumental`; `--exclude '<styles>'`; settings such as Weirdness in `--note`; Grok creates it on the
   newest model and saves both takes into inbox/suno/). Any other
-  site: `--kind browser --url URL --note '<what to do>'`. Never ask the person to paste, press Create, download or
+  site: `--kind browser --url URL --note '<what to do>'`. A job you no longer need: `slop relay cancel JOB --reason
+  '<why>'` (never leave it open, never fail it). Never ask the person to paste, press Create, download or
   upload anything; they make decisions only. `--kind person` is only for what no browser can do for them.
   Midjourney prompts: no `--v` and no profile code; `--raw` and `--hd` as the director chose. The job applies their
   choices and tells Grok to press the P button when they want their personalization (`--personalize on|off`;

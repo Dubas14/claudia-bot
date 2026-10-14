@@ -13,7 +13,7 @@ One multi-select widget "Which do you have, or are willing to get?": Claude Max 
 An account they will get but do not have yet: at its step below, first send its sign-up page (claude.ai, chatgpt.com, grok.com, openrouter.ai, suno.com, midjourney.com, accounts.google.com) and go on when they say done; "later": skip it for now ("setup" brings it back).
 
 ## Reply 2 - install (no spend)
-1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.3.4` (no tag: fine).
+1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.3.5` (no tag: fine).
 2. Toolkit: `bash /workspace/claudia/bin/setup.sh --check --json`. `ok` true and `profile` full: say "toolkit ready" (no install). Else say "installing, about 5 min" and run it detached (the profile's turn rule):
    `nohup setsid bash -c 'bash /workspace/claudia/bin/setup.sh --minimal && bash /workspace/claudia/bin/setup.sh --full' > /workspace/claudia-install.log 2>&1 < /dev/null &`
 3. Record their answers (after the install's `--minimal` part, `slop` works):

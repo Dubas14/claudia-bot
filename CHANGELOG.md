@@ -3,6 +3,14 @@
 Each release is a tag `vX.Y.Z`. A bot on an older release reminds its person once ("say update"); `slop update apply`
 installs it and prints the newest entries below.
 
+## 0.3.5
+- Opus can close a job it no longer needs: it shows as cancelled, not failed.
+- Every Midjourney image records the prompt, plate and model that made it.
+- A Midjourney prompt over about 800 characters gets a warning before it runs.
+- A video phones play badly (full range) is stopped before it reaches you, and Opus gets the one-line fix.
+- Drive: videos upload as .mov (an .mp4 was filed as a document on Android), and the setup test clip checks it plays.
+- Wake-ups reuse a claudia-wake routine a template brought instead of making a second one.
+
 ## 0.3.4
 - Wake-ups say up front that their key comes from the Grok Bot desktop app (the phone app has no Webhook section), and "later" skips them: everything works without.
 

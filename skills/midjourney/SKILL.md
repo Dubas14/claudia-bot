@@ -14,7 +14,7 @@ You are the hands. Opus wrote every prompt; you never change a word, never pick 
 4. For each prompt in `text`, in order: paste it exactly into the prompt box and press Enter. Each one runs as its own Midjourney job.
 5. Wait until every prompt shows its four images (about a minute each). Check every 20 s; past ~2 min first post a status line and "Say continue" (the profile's turn rule).
 6. Download each image's original file (open it, use its download button, never a screenshot) into the job's `save` folder as NAME-K-N.png: K = the prompt's number from 1, N = the image from 1 to 4. When the job has `plates`, name prompt K's images PLATE-N.png instead (PLATE = the K-th entry).
-7. `slop --json relay done JOB --file PATH` with one --file per image. Then one line to the person, e.g. "Midjourney: 6 prompts, 24 images, sent to Opus."
+7. `slop --json relay done JOB --file PATH --model '<the Midjourney version the page used>'` with one --file per image (the relay records which prompt made each image). Then one line to the person, e.g. "Midjourney: 6 prompts, 24 images, sent to Opus."
 
 ## When it goes wrong
 - The P button asks for a profile first (the person has none yet): leave it off, run the prompts and add `--note 'no personalization profile yet'` to done.

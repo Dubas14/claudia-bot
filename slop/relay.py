@@ -25,7 +25,7 @@ every change):
                      DECISIONS.md with `slop -p NAME decide`)
   outbox.jsonl       {id, ts, t, kind say|ask|job, text, default, files[], turn, auto}: every message for the director
                      and every job (job J-NNNN = outbox id NNNN, with all its fields; absolute paths)
-  jobs.json          {J-NNNN: {status done|failed|declined, files[], reason, ended}}; a job not in it is open
+  jobs.json          {J-NNNN: {status done|failed|declined|cancelled, files[], reason, ended}}; a job not in it is open
   state.json         cursors (delivered = last inbox id given to the production, read = last outbox id Grok showed),
                      turns, sessions {engine: id}, last_error, last_turn
   runner.json        the supervisor: starting | running | idle | failed | stopped (+ pid, job id)
@@ -674,6 +674,14 @@ def _post(a, kind: str) -> dict:
         (files.append(str(hit)) if hit else missing.append(f))
     if missing:
         raise SlopError(f"--show: no such file: {', '.join(missing)} (nothing was posted; give files that exist)")
+    if not getattr(a, "as_is", False):
+        bad = [(f, why) for f in files if (why := _video_issue(Path(f)))]
+        if bad:
+            f, why = bad[0]
+            raise SlopError(f"{Path(f).name} is {why}: phones play it washed out or not at all, so nothing was posted. "
+                            f"Show a phone copy: ffmpeg -i '{f}' -vf scale=out_range=tv,format=yuv420p -color_range tv "
+                            "-c:v libx264 -crf 18 -preset medium -c:a aac -movflags +faststart '<name>-phone.mp4' "
+                            "(or post it as it is with --as-is)")
     rec = {"ts": util.iso_now(), "t": round(time.time(), 3), "kind": kind, "text": text, "files": files,
            "turn": _turn_no()}
     if kind == "ask":
@@ -685,6 +693,30 @@ def _post(a, kind: str) -> dict:
     return {"id": oid, "kind": kind, "files": files,
             "text": f"posted #{oid} ({kind}{f', {len(files)} file(s)' if files else ''}): Grok shows it to the "
                     "director verbatim"}
+
+
+def _video_issue(path: Path) -> str | None:
+    """Why a video plays badly on phones (full range yuvj420p, 4:4:4, 10-bit), else None (ffprobe; unknown: None)."""
+    if path.suffix.lower() not in VIDEO_EXT:
+        return None
+    import shutil
+    exe = shutil.which("ffprobe")
+    if not exe:
+        return None
+    try:
+        r = subprocess.run([exe, "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt,color_range",
+                            "-of", "json", str(path)], capture_output=True, text=True, timeout=30)
+        st = (json.loads(r.stdout or "{}").get("streams") or [{}])[0]
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return None
+    pix, rng = str(st.get("pix_fmt") or ""), str(st.get("color_range") or "")
+    if not pix:
+        return None
+    if pix.startswith("yuvj") or rng == "pc":
+        return f"full range ({pix}{', pc range' if rng == 'pc' else ''})"
+    if pix not in ("yuv420p", "nv12"):
+        return f"{pix} (phones play yuv420p)"
+    return None
 
 
 def cmd_say(a) -> dict:
@@ -764,6 +796,11 @@ def cmd_job(a) -> dict:
             adjusted += [d for d in did if d not in adjusted]
         pers = a.personalize or ("on" if mj.get("personalize", True) else "off")
         rec.update(text=texts, expect_count=4 * len(texts), personalize=pers == "on", plates=plates_ or None)
+        for i, t in enumerate(texts, 1):             # Midjourney shortens long prompts (a "Long Prompt" badge)
+            n_chars = len(t.split(" --")[0].strip())
+            if n_chars > MJ_PROMPT_MAX:
+                adjusted.append(f"prompt {i} is {n_chars} characters before its parameters: Midjourney shortens "
+                                f"prompts over about {MJ_PROMPT_MAX}, so trim it and send the job again")
     elif a.kind == "suno":
         lyrics = _read_text(a.lyrics, a.lyrics_file, "lyrics")
         if not (a.style or "").strip():
@@ -858,6 +895,33 @@ def _media_size(path: Path) -> str | None:
         return None
 
 
+def _mj_provenance(j: dict, files: list[str], model: str | None) -> None:
+    """Which prompt made each saved Midjourney image (and its plate, personalization and model):
+    midjourney-prompts.json beside the images, so a picked image can always be traced back."""
+    texts, plates = j.get("text") or [], j.get("plates") or []
+    name = str(j.get("name") or j.get("job"))
+    by_dir: dict[Path, dict] = {}
+    for f in files:
+        p = Path(f)
+        k = None
+        m = re.fullmatch(re.escape(name) + r"-(\d+)-\d+", p.stem)
+        if m:
+            k = int(m.group(1))
+        elif plates:
+            m2 = re.fullmatch(r"(.+)-\d+", p.stem)
+            if m2 and m2.group(1) in plates:
+                k = plates.index(m2.group(1)) + 1
+        if k is None and len(texts) == 1:
+            k = 1
+        ok = bool(k) and k <= len(texts)
+        idx = by_dir.setdefault(p.parent, _read_json(p.parent / "midjourney-prompts.json"))
+        idx[p.name] = {"job": j["job"], "k": k if ok else None, "prompt": texts[k - 1] if ok else None,
+                       "plate": plates[k - 1] if ok and k <= len(plates) else None,
+                       "personalize": j.get("personalize"), "model": model, "saved": util.iso_now()}
+    for d, idx in by_dir.items():
+        _write_json(d / "midjourney-prompts.json", idx)
+
+
 def _area(size: str) -> int:
     w, h = size.split("x")
     return int(w) * int(h)
@@ -877,14 +941,17 @@ def cmd_done(a) -> dict:
         raise SlopError(f"name the saved files: slop --json relay done {j['job']} --file PATH [--file PATH ...]"
                         + (" (a browser job with no files: --note '<what you found or did>')"
                            if j.get("job_kind") == "browser" else ""))
+    model = (getattr(a, "model", None) or "").strip() or None
+    if j.get("job_kind") == "midjourney" and files:
+        _mj_provenance(j, files, model)
     sizes = {f: s for f in files if (s := _media_size(Path(f)))}      # the real pixel size, for the production
     top = max((_area(s) for s in sizes.values()), default=0)
     small = [f for f, s in sizes.items() if _area(s) < 0.8 * top]
     text = (f"[grok] {j['job']} done: files " + ", ".join(files) if files else f"[grok] {j['job']} done") \
         + ("\nsizes: " + ", ".join(f"{Path(f).name} {s}" for f, s in sizes.items()) if sizes else "") \
-        + (f"\n{a.note}" if a.note else "")
+        + (f"\nmodel: {model}" if model else "") + (f"\n{a.note}" if a.note else "")
     out = deliver(text, "grok", (j["job"], {"status": "done", "files": files, "sizes": sizes or None,
-                                             "ended": util.iso_now()}))
+                                             "model": model, "ended": util.iso_now()}))
     out.update(job=j["job"], files=files, sizes=sizes,
                text=f"job {j['job']} done ({len(files)} file(s)"
                     + (f", {', '.join(sorted(set(sizes.values())))}" if sizes else "") + "); " + out["text"])
@@ -893,6 +960,25 @@ def cmd_done(a) -> dict:
                        "rendered a lower resolution than it showed. Before the next Generate, switch the resolution "
                        "down and back up")
         out["text"] += "\nwarning: " + out["warn"]
+    return out
+
+
+def cmd_cancel(a) -> dict:
+    """A job no one needs any more: closed as cancelled, never as failed. From the production: nothing goes back to
+    it. From Grok (the person said so): the production hears it."""
+    _, rd = _dirs()
+    j = _open_job(rd, a.job)
+    reason = (a.reason or "").strip()
+    rec = {"status": "cancelled", "reason": reason or None, "ended": util.iso_now()}
+    if os.environ.get("SLOP_RELAY_TURN"):              # the production's own job: it knows
+        with _lock(rd):
+            jobs = _read_json(rd / "jobs.json")
+            jobs[j["job"]] = rec
+            _write_json(rd / "jobs.json", jobs)
+        _log(rd, f"job {j['job']} cancelled by the production" + (f": {reason}" if reason else ""))
+        return {"job": j["job"], "status": "cancelled", "text": f"job {j['job']} cancelled: Grok will not run it"}
+    out = deliver(f"[grok] {j['job']} cancelled" + (f": {reason}" if reason else ""), "grok", (j["job"], rec))
+    out.update(job=j["job"], status="cancelled", text=f"job {j['job']} cancelled; " + out["text"])
     return out
 
 
@@ -953,6 +1039,7 @@ def _render_job(j: dict) -> str:
 
 
 VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi"}
+MJ_PROMPT_MAX = 800                     # characters before the parameters (docs/50 §3: longer prompts get shortened)
 LINK_OVER_B = 20 * 1024 * 1024          # bigger files (and every video) reach the person as a Drive link (skill drive)
 
 
@@ -1770,7 +1857,15 @@ def register(sub) -> None:
     p.add_argument("job", help="the job id, e.g. J-0003")
     p.add_argument("--file", action="append", help="a saved file (repeat per file)")
     p.add_argument("--note", help="one line for the production")
+    p.add_argument("--model", help="the model or version the page used (Midjourney's version, Suno's model), recorded "
+                                   "with the files")
     p.set_defaults(func=cmd_done)
+
+    p = add("cancel", help="close a job no one needs any more (cancelled, not failed): the production's own, or "
+                           "Grok's when the person says so")
+    p.add_argument("job", help="the job id, e.g. J-0003")
+    p.add_argument("--reason", help="why, in a few words")
+    p.set_defaults(func=cmd_cancel)
 
     p = add("fail", help="(Grok) a job could not be done: mark it failed (--declined: the service refused it)")
     p.add_argument("job", help="the job id, e.g. J-0003")
@@ -1782,12 +1877,14 @@ def register(sub) -> None:
     p.add_argument("text", nargs="+", help="the message")
     p.add_argument("--show", nargs="+", metavar="FILE",
                    help="files Grok shows with it (contact sheets, stills, proofs)")
+    p.add_argument("--as-is", action="store_true", help="post a video even if phones will play it badly")
     p.set_defaults(func=cmd_say)
 
     p = add("ask", help="(the production) ask the director one question, with its default")
     p.add_argument("text", nargs="+", help="the question")
     p.add_argument("--default", default=None, help="the answer when they just say go")
     p.add_argument("--show", nargs="+", metavar="FILE", help="files Grok shows with it")
+    p.add_argument("--as-is", action="store_true", help="post a video even if phones will play it badly")
     p.set_defaults(func=cmd_ask)
 
     p = add("job", help="(the production) ask Grok for browser work, all of it in Grok's own signed-in browser "

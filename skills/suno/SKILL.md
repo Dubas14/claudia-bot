@@ -13,7 +13,7 @@ You are the hands. Opus wrote the title, the style and the lyrics; you never cha
 3. Open the form with separate lyrics, style and title fields (the Advanced tab today; it was once called Custom). Leave the model on the newest the page offers (its default) unless the job's note names one. Paste the lyrics into the lyrics box exactly (`instrumental` true: leave the lyrics box empty; use an Instrumental switch only if the page shows one), the style into the style field, `exclude` into the exclude field when given, and the title. Settings the job's note names: set them where the page offers them (one it lacks: say so in the done note). Then Create.
 4. Wait until both takes are finished (one to three minutes). Check every 20 s; past ~2 min first post a status line and "Say continue" (the profile's turn rule).
 5. Download each take as WAV when the menu offers it (paid plans), else MP3, into the job's `save` folder as NAME-a.wav and NAME-b.wav (or .mp3).
-6. `slop --json relay done JOB --file PATH --file PATH`. Then one line to the person, e.g. "Suno: two takes made, sent to Opus."
+6. `slop --json relay done JOB --file PATH --file PATH --model '<the model the page used>'`. Then one line to the person, e.g. "Suno: two takes made, sent to Opus."
 
 ## When it goes wrong
 - The lyrics or the style are refused: never edit them. `slop --json relay fail JOB --reason '<the page words>' --declined`.

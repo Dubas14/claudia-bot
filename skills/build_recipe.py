@@ -52,7 +52,7 @@ PLUGIN_PLACEHOLDER = "<TBD-HIGGSFIELD-PLUGIN-ID>"
 PLUGIN_ID_DEFAULT = "5420454"
 PLUGIN = {"name": "Higgsfield",
           "description": "Video, image and audio generation (Seedance, Kling, Veo, Wan and more) with the user's own "
-                         "Higgsfield credits; the video path for users without an OpenRouter key."}
+                         "Higgsfield credits. Optional: Opus does not use it yet (its clips go through OpenRouter)."}
 
 KB = 1024
 MAX_SKILL = 6 * KB

@@ -69,7 +69,7 @@ idle, queued (messages wait but nothing runs), failed (with the error and the lo
 | inbox.jsonl | every message to the production: `{id, ts, from, text}` |
 | decisions.md | every director message, dated, append-only |
 | outbox.jsonl | every say, ask and job: `{id, kind, text, default, files, turn}`; job J-0003 is outbox item 3 |
-| jobs.json | the result of each finished job (done, failed or declined); a job not in it is open |
+| jobs.json | the result of each finished job (done, failed, declined or cancelled); a job not in it is open |
 | state.json | the cursors (delivered to the production, shown by Grok), the turn count, the session per engine |
 | runner.json | the supervisor: starting, running, idle, failed or stopped, with its pid and job id |
 | turn.json | the running turn: number, start, pid, the last progress line |
@@ -125,7 +125,7 @@ wake` and `relay log` show it). `relay wake off` turns it off; `relay wake test`
 
 | Who | Command |
 |---|---|
-| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `effort [LEVEL] [--engine codex]`, `wake [URL|off|test]`, `status`, `stop`, `log` |
-| Production | `slop relay say`, `ask`, `job`, `inbox` |
+| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `effort [LEVEL] [--engine codex]`, `wake [URL|off|test]`, `cancel JOB`, `status`, `stop`, `log` |
+| Production | `slop relay say`, `ask`, `job`, `cancel`, `inbox` |
 
 The skill for Grok's side is skills/claudia-relay/SKILL.md.
