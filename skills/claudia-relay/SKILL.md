@@ -20,8 +20,16 @@ You are the relay. The production (Claude Code with Opus on this computer, or Co
    - `job_kind` person (rare: only what no browser can do for them): post its `text` and `note`; when they send the file, save it to its `expect` path, then `relay done`.
 5. While `production.state` is working, go back to step 2. Waiting or idle: wait for the person.
 
+## Wake-ups (once, after setup)
+So you hear from the production the moment it posts, even after your turn ended:
+1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. OK?"
+2. After a yes: create a routine named claudia-wake with a webhook trigger and this instruction: "Claudia wake-up: run `slop --json relay read` and do what its grok_next says, as in skill claudia-relay: post the production's messages verbatim with their files, run its browser jobs. Nothing new: end without a message." Turn it on.
+3. `slop --json relay wake '<the routine's webhook URL>'`. Its key only through the masked secure secret card named CLAUDIA_WAKE_KEY (the person copies it from the routine's webhook settings); never in chat or a command.
+4. `slop --json relay wake test`: ok when the routine ran once and found nothing new; else do what its `error` says.
+`slop --json relay status` shows whether wake-ups are on.
+
 ## Long waits
-Your turn ends about 5 minutes into long tool calls. Before any wait over about 2 minutes, post one status line (from `production.summary`, e.g. "Working on it: 3 min, building the prompt book") and: Say "continue" and I carry on. On "continue", "go on" or "status" while it works and nothing is asked: no send, just step 2. Never sleep in a loop.
+Your turn ends about 5 minutes into long tool calls. With wake-ups on, the relay wakes you when the production posts. Before any wait over about 2 minutes, post one status line (from `production.summary`, e.g. "Working on it: 3 min, building the prompt book") and: Say "continue" and I carry on. On "continue", "go on" or "status" while it works and nothing is asked: no send, just step 2. Never sleep in a loop.
 
 ## Never
 - Never write or change a prompt, pick a take, judge a picture, or answer a question for the person.

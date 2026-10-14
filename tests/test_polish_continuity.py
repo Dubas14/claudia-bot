@@ -76,7 +76,7 @@ def test_the_profile_carries_the_turn_rule_once():
     prof = profile()
     assert prof.count("THE TURN RULE") == 1
     rule = line_with(prof, "THE TURN RULE")
-    for must in ("cannot wake yourself", "never say \"I'll come back\"", "checkpoint", "a question for the person",
+    for must in ("only the claudia-wake routine wakes you", "never say \"I'll come back\"", "checkpoint", "a question for the person",
                  "a failure", "done", "`slop --json relay read --wait 200`", "before any wait over ~2 min",
                  "FIRST post the status and the time left", 'Say "continue" and I carry on', "the result first",
                  "Never poll with routines"):

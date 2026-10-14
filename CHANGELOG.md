@@ -3,6 +3,9 @@
 Each release is a tag `vX.Y.Z`. A bot on an older release reminds its person once ("say update"); `slop update apply`
 installs it and prints the newest entries below.
 
+## 0.3.0
+- Wake-ups: Grok hears the moment Opus (or Codex) posts, even after its own turn ended. Grok sets up a small wake-up routine once (its key goes in a secure card); the relay calls it when there is news and Grok is not already waiting.
+
 ## 0.2.9
 - Always the newest: no model or version is hard-coded. The toolkit picks the newest model of each family, Midjourney prompts never carry `--v` (its default is its newest), and Grok uses the newest model each site offers.
 - Midjourney's Raw, HD and personalization are your choices (Opus asks once per project; defaults Raw on, personalization on, HD off). Personalization goes on with the P button, never as a code in a prompt.

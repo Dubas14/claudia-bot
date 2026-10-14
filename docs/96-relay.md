@@ -72,6 +72,8 @@ idle, queued (messages wait but nothing runs), failed (with the error and the lo
 | turn.json | the running turn: number, start, pid, the last progress line |
 | relay.log | one line per event; `turns/turn-NNNN.jsonl` and `.err` keep each turn's raw stream and stderr |
 | bin/slop | the toolkit's `slop` for the production, first on its PATH |
+| wake.json | the wake-up routine's URL (never its key), the last wake-up and what it covered |
+| reader.json | Grok is waiting in `read --wait` until this time (the waker leaves the news to that read) |
 
 Every file is LF. Logs are appended; everything else is replaced by an atomic rename. Every change holds a short
 lock (the folder `lock/` with its owner's pid; a lock whose owner is gone is broken), so `send`, `read` and the
@@ -102,11 +104,25 @@ ages from the monotonic clock, never the wall clock: it can step (a WSL clock wa
 - **Grok's turn ends** about 5 minutes into long tool calls, so `read --wait` is capped at 240 s and the skill
   posts a status line and "Say continue" before any long wait.
 
-## 5. Commands
+## 5. Wake-ups
+
+Grok cannot wake itself, and its turn ends a few minutes into a long wait. A wake-up routine fixes that: a Grok Bot
+routine with a webhook trigger whose instruction is "run `slop --json relay read` and do what grok_next says" (skill
+claudia-relay, Wake-ups). `slop relay wake URL` gives the relay its URL; its key comes from the masked secure secret
+card CLAUDIA_WAKE_KEY (an environment variable, never a file), sent as `Authorization: Bearer <key>`.
+
+The supervisor runs a waker beside each production turn. It watches the outbox, not the engine, so it works the same
+for Claude Code and Codex. It POSTs when the production posted something Grok has not read, Grok is not waiting in
+`read --wait`, and nothing new came for 8 s (a say followed by an ask wakes Grok once); right away when the turn ends;
+and when a turn fails. The body is `{source, event: posted|finished|failed|test, unread, kinds, production}`: the kind
+of news, never its words. A failed POST is tried again after 30 s and 2 min, then given up for that batch (`relay
+wake` and `relay log` show it). `relay wake off` turns it off; `relay wake test` sends one now.
+
+## 6. Commands
 
 | Who | Command |
 |---|---|
-| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `effort [LEVEL] [--engine codex]`, `status`, `stop`, `log` |
+| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `effort [LEVEL] [--engine codex]`, `wake [URL|off|test]`, `status`, `stop`, `log` |
 | Production | `slop relay say`, `ask`, `job`, `inbox` |
 
 The skill for Grok's side is skills/claudia-relay/SKILL.md.

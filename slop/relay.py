@@ -63,6 +63,10 @@ ENGINES = ("claude", "codex")
 DEFAULT_MODEL = {"claude": "opus", "codex": None}
 WAIT_CAP_S = 240.0
 READ_SETTLE = 5                # a production that stops working must stay stopped this many polls (2 s) to end a wait
+WAKE_KEY_ENV = "CLAUDIA_WAKE_KEY"   # the wake-up routine's webhook key: a masked secure secret card, never a file
+WAKE_QUIET_S = 8.0             # posts in a burst (a say, then an ask) wake Grok once
+WAKE_TICK_S = 2.0
+WAKE_RETRY_S = (30.0, 120.0)   # a failed wake-up is tried again after these, then given up for that batch
 PROMPT_ARG_MAX = 6000          # longer prompts go through a file (Windows command lines max out at 32,767 chars)
 START_GRACE_S = 30.0           # a "starting" claim without a supervisor is given up after this
 LOCK_WAIT_S = 20.0
@@ -900,6 +904,9 @@ def cmd_read(a) -> dict:
     wait = max(0.0, min(float(a.wait or 0), WAIT_CAP_S))
     t0 = time.monotonic()
     calm = 0
+    if wait > 0:                                      # Grok is waiting: the waker leaves the news to this read
+        _write_json(rd / "reader.json", {"pid": os.getpid(), "until_m": time.monotonic() + wait + 3,
+                                         "since": util.iso_now()})
     while True:
         # the wait holds its full time unless there is something for Grok: a new item, an open job, or a production
         # that stopped working (waiting, idle, failed) and stays stopped - a blip in its state never ends a wait
@@ -920,6 +927,8 @@ def cmd_read(a) -> dict:
         if new or _jobs(rd) or wait - (time.monotonic() - t0) <= 0 or production(rd).get("state") != "working":
             break
         calm = 0                                      # a misread, nothing new after all: keep waiting
+    if wait > 0:
+        _write_json(rd / "reader.json", {"pid": os.getpid(), "until_m": 0, "last": util.iso_now()})
     shown = [r for r in (rows if a.all else new) if r.get("kind") in ("say", "ask")]
     items = [_item(r) for r in shown]
     prod = production(rd)
@@ -962,6 +971,10 @@ def cmd_status(a) -> dict:
     eff = effort_for(eng, rd) if eng in ENGINES else (None, "")
     if eng in ENGINES:
         lines.insert(2, f"  effort: {eff[0] or 'the engine default'} ({eff[1]}); `slop relay effort` changes it")
+    wk = _read_json(rd / "wake.json")
+    lines.insert(3, "  wake-ups: " + (f"on ({_mask_url(wk.get('url'))})" + ("" if os.environ.get(WAKE_KEY_ENV) else
+                                                                          f", no ${WAKE_KEY_ENV}")
+                                     if wk.get("url") else "off (Grok hears only while it waits; slop relay wake)"))
     return {"production": prod, "engine": eng, "model": cfg.get("model"), "effort": eff[0], "session": sess,
             "turns": st.get("turns", 0),
             "inbox": len(inbox), "outbox": len(outbox), "unread": unread, "jobs": [_job_item(j) for j in jobs],
@@ -1314,6 +1327,163 @@ def _turn(wd: Path, rd: Path, cfg: dict, n: int, msgs: list[dict], prev_err: dic
     return res
 
 
+def _mask_url(url: str | None) -> str:
+    from urllib.parse import urlsplit
+    u = urlsplit(url or "")
+    return f"{u.scheme}://{u.hostname}/...{(u.path or '')[-4:]}" if u.scheme and u.hostname else ""
+
+
+def _wake_url(url: str) -> str:
+    from urllib.parse import urlsplit
+    u = urlsplit((url or "").strip())
+    local = u.hostname in ("127.0.0.1", "localhost", "::1")
+    if not u.hostname or not (u.scheme == "https" or (u.scheme == "http" and local)):
+        raise SlopError("give the wake-up routine's webhook URL (https://...), or off, or test")
+    return url.strip()
+
+
+def _reader_active(rd: Path) -> bool:
+    r = _read_json(rd / "reader.json")
+    return float(r.get("until_m") or 0) > time.monotonic() and _alive(r.get("pid"))
+
+
+def wake_send(rd: Path, event: str, unread: list[dict] | None = None) -> dict:
+    """POST to the wake-up routine's webhook, so Grok starts a run that reads the relay. The body names the kind of
+    news only, never its words; the key comes from $CLAUDIA_WAKE_KEY and is never printed. -> {ok, status, error}"""
+    import urllib.error
+    import urllib.request
+    cfg = _read_json(rd / "wake.json")
+    if not cfg.get("url"):
+        return {"ok": False, "status": None, "error": "wake-ups are off (slop relay wake URL)"}
+    unread = unread or []
+    body = json.dumps({"source": "claudia-relay", "event": event, "unread": len(unread),
+                       "kinds": sorted({str(r.get("kind")) for r in unread if r.get("kind")}),
+                       "production": production(rd).get("state")}).encode("utf-8")
+    req = urllib.request.Request(cfg["url"], data=body, method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": "claudia-relay"})
+    key = os.environ.get(WAKE_KEY_ENV, "").strip()
+    if key:
+        req.add_header("Authorization", f"Bearer {key}")
+    status, err = None, None
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            status = resp.status
+    except urllib.error.HTTPError as e:
+        status = e.code
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        err = str(getattr(e, "reason", None) or e)[:200]
+    ok = status is not None and 200 <= status < 300
+    err = None if ok else (err or f"HTTP {status}" + (" (is the key in the secure secret card "
+                                                       f"{WAKE_KEY_ENV}?)" if status in (401, 403) else ""))
+    cfg = _read_json(rd / "wake.json")
+    cfg["last"] = {"at": util.iso_now(), "event": event, "unread": len(unread), "ok": ok, "status": status,
+                   "error": err}
+    _write_json(rd / "wake.json", cfg)
+    _log(rd, f"wake: {event} ({len(unread)} unread) -> {'ok ' + str(status) if ok else err}")
+    return {"ok": ok, "status": status, "error": err}
+
+
+class _Waker(threading.Thread):
+    """In the supervisor: wakes Grok when the production posted something Grok has not read and Grok is not waiting
+    in `relay read --wait`, once per burst of posts; and when a turn failed. The same for Claude Code and Codex: it
+    watches the relay's outbox, not the engine. Never takes the relay lock (its POST may take seconds)."""
+
+    def __init__(self, rd: Path):
+        super().__init__(daemon=True, name="relay-waker")
+        self.rd, self.halt = rd, threading.Event()
+        self.newest, self.changed = -1, time.monotonic()
+        self.fails, self.retry_at = 0, 0.0
+
+    def run(self) -> None:
+        while not self.halt.wait(WAKE_TICK_S):
+            try:
+                self.tick()
+            except Exception as e:  # noqa: BLE001 - a wake-up never breaks the production
+                _log(self.rd, f"wake: error {e}")
+
+    def finish(self, event: str | None, turn: int | None = None) -> None:
+        self.halt.set()
+        self.join(timeout=WAKE_TICK_S + 12)
+        if event:
+            try:
+                self.tick(final=event, turn=turn)
+            except Exception as e:  # noqa: BLE001
+                _log(self.rd, f"wake: error {e}")
+
+    def tick(self, final: str | None = None, turn: int | None = None) -> None:
+        cfg = _read_json(self.rd / "wake.json")
+        if not cfg.get("url"):
+            return
+        rows = _rows(self.rd / "outbox.jsonl")
+        newest = max((int(r.get("id") or 0) for r in rows), default=0)
+        now = time.monotonic()
+        if newest != self.newest:
+            self.newest, self.changed = newest, now
+        if _reader_active(self.rd):
+            return                                    # Grok is waiting in relay read: it gets the news itself
+        read = int(_read_json(self.rd / "state.json").get("read") or 0)
+        unread = [r for r in rows if int(r.get("id") or 0) > read]
+        fresh = bool(unread) and newest > int(cfg.get("woken_id") or 0)
+        failed = final == "failed" and turn is not None and cfg.get("woken_failed") != turn
+        if not (fresh or failed):
+            return
+        if final is None and (now - self.changed < WAKE_QUIET_S or now < self.retry_at):
+            return                                    # it may post more (a say, then an ask), or a retry comes later
+        r = wake_send(self.rd, final or "posted", unread)
+        cfg = _read_json(self.rd / "wake.json")
+        if r["ok"] or final or self.fails >= len(WAKE_RETRY_S):
+            cfg["woken_id"] = max(newest, int(cfg.get("woken_id") or 0))
+            if failed:
+                cfg["woken_failed"] = turn
+            self.fails, self.retry_at = 0, 0.0
+        else:
+            self.retry_at = now + WAKE_RETRY_S[self.fails]
+            self.fails += 1
+        _write_json(self.rd / "wake.json", cfg)
+
+
+def cmd_wake(a) -> dict:
+    """The wake-up routine: Grok's webhook, called when the production posts while Grok is not waiting. No argument:
+    the setting; a URL: turn wake-ups on; off; test (one wake-up now)."""
+    _, rd = _dirs()
+    arg = (a.url or "").strip()
+    head = None
+    if arg.lower() == "off":
+        cfg = _read_json(rd / "wake.json")
+        cfg.pop("url", None)
+        _write_json(rd / "wake.json", cfg)
+        head = "wake-ups are off: Grok hears from the production only while it waits"
+        _log(rd, "wake: off")
+    elif arg.lower() == "test":
+        r = wake_send(rd, "test")
+        head = ("test wake-up sent: the routine should run once and find nothing new" if r["ok"] else
+                f"test wake-up FAILED: {r['error']}")
+        if not r["ok"] and not _read_json(rd / "wake.json").get("url"):
+            raise SlopError(r["error"])
+    elif arg:
+        url = _wake_url(arg)
+        rows = _rows(rd / "outbox.jsonl")
+        cfg = _read_json(rd / "wake.json")
+        cfg.update(url=url, set=util.iso_now(), woken_id=max((int(r.get("id") or 0) for r in rows), default=0))
+        _write_json(rd / "wake.json", cfg)
+        head = f"wake-ups on: {_mask_url(url)}; next: slop --json relay wake test"
+        _log(rd, f"wake: on ({_mask_url(url)})")
+    cfg = _read_json(rd / "wake.json")
+    on, key = bool(cfg.get("url")), bool(os.environ.get(WAKE_KEY_ENV, "").strip())
+    last = cfg.get("last") or {}
+    lines = ([head] if head else []) + [
+        "wake-ups: " + (f"on ({_mask_url(cfg.get('url'))})" if on else "off"),
+        f"  key: {'set' if key else 'not set'} (the masked secure secret card {WAKE_KEY_ENV})",
+        "  last: " + (f"{last.get('event')} at {last.get('at')}: " + ("ok" if last.get("ok") else str(last.get("error")))
+                      if last else "never")]
+    out = {"on": on, "url": _mask_url(cfg.get("url")), "key": key, "last": last or None, "text": "\n".join(lines)}
+    if arg.lower() == "test":
+        out["ok"] = bool(last.get("ok"))
+        if not out["ok"]:
+            out["error"] = f"the test wake-up failed: {last.get('error')}"
+    return out
+
+
 def cmd_run(a) -> dict:
     """The supervisor (a `slop job`): turns until nothing is pending."""
     wd, rd = _dirs()
@@ -1331,6 +1501,8 @@ def cmd_run(a) -> dict:
         except OSError:
             pass
     turns = 0
+    waker = _Waker(rd)
+    waker.start()
     while True:
         with _lock(rd):
             cfg = _cfg(rd)
@@ -1370,12 +1542,17 @@ def cmd_run(a) -> dict:
                                                  "turn": n, "since": util.iso_now(), "since_ts": time.time(),
                                                  "job_id": jid})
                 _log(rd, f"turn {n}: {'stopped' if stopped else 'FAILED'}: {res.get('error')}")
-                if stopped:
-                    return {"turns": turns, "stopped": True, "text": f"stopped during turn {n}"}
-                return {"ok": False, "turns": turns, "error": f"turn {n} failed: {res.get('error')}"}
-            _write_json(rd / "state.json", st)
+                end = ({"turns": turns, "stopped": True, "text": f"stopped during turn {n}"} if stopped else
+                       {"ok": False, "turns": turns, "error": f"turn {n} failed: {res.get('error')}"})
+            else:
+                _write_json(rd / "state.json", st)
+                end = None
+        if end is not None:                           # outside the lock: a wake-up may take seconds
+            waker.finish(None if end.get("stopped") else "failed", turn=n)
+            return end
         _log(rd, f"turn {n}: done in {res.get('elapsed_s')} s")
     _log(rd, f"idle after {turns} turn(s)")
+    waker.finish("finished")
     return {"turns": turns, "text": f"the production ran {turns} turn(s) and is idle"}
 
 
@@ -1477,6 +1654,11 @@ def register(sub) -> None:
 
     p = add("status", help="the production's state, engine, session, message counts and open jobs")
     p.set_defaults(func=cmd_status)
+
+    p = add("wake", help="the wake-up routine: Grok's webhook, called when the production posts while Grok is "
+                         "not waiting (a URL turns it on; off; test); its key: $CLAUDIA_WAKE_KEY")
+    p.add_argument("url", nargs="?", help="the routine's webhook URL (https), off, or test")
+    p.set_defaults(func=cmd_wake)
 
     p = add("effort", help="how hard the production thinks, per engine (Claude Code --effort, Codex reasoning "
                            "effort): show the levels, or set one for the next turns")

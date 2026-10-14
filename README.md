@@ -333,6 +333,7 @@ or after the command name; the documented form is `slop --json --project NAME <c
 | `slop relay job --kind grok-imagine\|midjourney\|suno\|browser\|person [--what WHAT] [--prompt PROMPT] [--prompt-file PROMPT_FILE] [--image IMAGE] [--aspect 16:9\|9:16\|1:1\|2:3\|3:2] [--seconds SECONDS] [--save SAVE] [--name NAME] [--note NOTE] [--text TEXT] [--title TITLE] [--style STYLE] [--lyrics LYRICS] [--lyrics-file LYRICS_FILE] [--exclude EXCLUDE] [--instrumental] [--url URL] [--personalize on\|off] [--expect EXPECT]` | (the production) ask Grok for browser work, all of it in Grok's own signed-in browser (--kind grok-imagine \| midjourney \| suno \| browser); --kind person only for what only a person can do |
 | `slop relay inbox` | (the production) new messages from the director and Grok, marked read |
 | `slop relay status` | the production's state, engine, session, message counts and open jobs |
+| `slop relay wake [URL]` | the wake-up routine: Grok's webhook, called when the production posts while Grok is not waiting (a URL turns it on; off; test); its key: $CLAUDIA_WAKE_KEY |
 | `slop relay effort [LEVEL] [--engine ENGINE]` | how hard the production thinks, per engine (Claude Code --effort, Codex reasoning effort): show the levels, or set one for the next turns |
 | `slop relay stop [--grace GRACE]` | stop the running production turn (waiting messages stay) |
 | `slop relay log [--lines LINES]` | the tail of the relay log (and the last turn's stderr) |
