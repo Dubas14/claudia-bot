@@ -22,9 +22,11 @@ You are the relay. The production (Claude Code with Opus on this computer, or Co
 
 ## Wake-ups (once, after setup)
 So you hear from the production the moment it posts, even after your turn ended:
-1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. OK?"
+1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. OK?" Not now: skip it ("wake-ups" brings it back).
 2. After a yes: create a routine named claudia-wake with a webhook trigger and this instruction: "Claudia wake-up: run `slop --json relay read` and do what its grok_next says, as in skill claudia-relay: post the production's messages verbatim with their files, run its browser jobs. Nothing new: end without a message." Turn it on.
-3. `slop --json relay wake '<the routine's webhook URL>'`. Its key only through the masked secure secret card named CLAUDIA_WAKE_KEY (the person copies it from the routine's webhook settings); never in chat or a command.
+3. You cannot read the routine's settings, so ask for two values from its Webhook settings, by their labels there, each with your direct link to it:
+   - In chat: "Copy the POST to address (Webhook URL) and paste it here." Then `slop --json relay wake '<what they pasted>'`.
+   - The masked secure secret card named CLAUDIA_WAKE_KEY, titled "Webhook key", described: "Routines > claudia-wake > Webhook: the key field (tap Generate if it is empty). The Authorization header line works too." Never ask for the key in chat.
 4. `slop --json relay wake test`: ok when the routine ran once and found nothing new; else do what its `error` says.
 `slop --json relay status` shows whether wake-ups are on.
 

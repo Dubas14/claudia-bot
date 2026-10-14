@@ -1333,13 +1333,23 @@ def _mask_url(url: str | None) -> str:
     return f"{u.scheme}://{u.hostname}/...{(u.path or '')[-4:]}" if u.scheme and u.hostname else ""
 
 
-def _wake_url(url: str) -> str:
+def _wake_url(text: str) -> str:
+    """The routine's webhook URL from whatever was pasted ("POST to https://...", quotes, a trailing dot)."""
     from urllib.parse import urlsplit
-    u = urlsplit((url or "").strip())
+    m = re.search(r"https?://[^\s\"'<>`]+", text or "")
+    url = m.group(0).rstrip(".,;:)]}") if m else ""
+    u = urlsplit(url)
     local = u.hostname in ("127.0.0.1", "localhost", "::1")
     if not u.hostname or not (u.scheme == "https" or (u.scheme == "http" and local)):
-        raise SlopError("give the wake-up routine's webhook URL (https://...), or off, or test")
-    return url.strip()
+        raise SlopError("paste the routine's webhook URL (its POST to field, https://...), or say off or test")
+    return url
+
+
+def _wake_key() -> str:
+    """$CLAUDIA_WAKE_KEY: the routine's key, or its whole Authorization header line (both are offered to copy)."""
+    k = os.environ.get(WAKE_KEY_ENV, "").strip().strip("\"'`")
+    k = re.sub(r"(?i)^authorization\s*:\s*", "", k)
+    return re.sub(r"(?i)^bearer\s+", "", k).strip()
 
 
 def _reader_active(rd: Path) -> bool:
@@ -1361,7 +1371,7 @@ def wake_send(rd: Path, event: str, unread: list[dict] | None = None) -> dict:
                        "production": production(rd).get("state")}).encode("utf-8")
     req = urllib.request.Request(cfg["url"], data=body, method="POST",
                                  headers={"Content-Type": "application/json", "User-Agent": "claudia-relay"})
-    key = os.environ.get(WAKE_KEY_ENV, "").strip()
+    key = _wake_key()
     if key:
         req.add_header("Authorization", f"Bearer {key}")
     status, err = None, None
@@ -1469,7 +1479,7 @@ def cmd_wake(a) -> dict:
         head = f"wake-ups on: {_mask_url(url)}; next: slop --json relay wake test"
         _log(rd, f"wake: on ({_mask_url(url)})")
     cfg = _read_json(rd / "wake.json")
-    on, key = bool(cfg.get("url")), bool(os.environ.get(WAKE_KEY_ENV, "").strip())
+    on, key = bool(cfg.get("url")), bool(_wake_key())
     last = cfg.get("last") or {}
     lines = ([head] if head else []) + [
         "wake-ups: " + (f"on ({_mask_url(cfg.get('url'))})" if on else "off"),

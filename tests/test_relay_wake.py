@@ -116,6 +116,19 @@ def test_a_failed_turn_wakes_grok(tmp_path, monkeypatch, hook):
     assert hook["got"][0]["body"]["event"] == "failed" and hook["got"][0]["body"]["production"] == "failed"
 
 
+def test_whatever_the_person_copied_works(tmp_path, monkeypatch, hook):
+    """The routine's settings offer the key and a ready "Authorization: Bearer <key>" line; the URL is pasted with
+    whatever came along with it."""
+    RT.setup(tmp_path, monkeypatch)
+    rc, out = K.run("relay", "wake", f"POST to {hook['url']}.")
+    assert rc == 0 and out["on"], out
+    for pasted in (KEY, f"Authorization: Bearer {KEY}", f"Bearer {KEY}", f'"{KEY}"'):
+        monkeypatch.setenv("CLAUDIA_WAKE_KEY", pasted)
+        rc, out = K.run("relay", "wake", "test")
+        assert rc == 0 and out["ok"], (pasted, out)
+        assert hook["got"][-1]["auth"] == f"Bearer {KEY}" and hook["got"][-1]["path"] == "/hooks/routine-abc123"
+
+
 def test_wake_test_and_a_turned_down_key(tmp_path, monkeypatch, hook):
     RT.setup(tmp_path, monkeypatch)
     monkeypatch.setenv("CLAUDIA_WAKE_KEY", KEY)
