@@ -418,7 +418,7 @@ they pronounce words the dictionary lacks and score word frequency). One command
 for the song:
 
 ```sh
-python3 tools/scansion.py lyric LYRICS.md --brief
+$SLOP_HOME/venv/bin/python /workspace/claudia/tools/scansion.py lyric LYRICS.md --brief
 ```
 
 - **SCANSION**: how the words sit on the grid as Suno sings them (flow without its rhyme term, with groove).

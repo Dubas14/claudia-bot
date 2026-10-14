@@ -42,8 +42,10 @@ There is one relay per computer. Grok never names a project: the production work
      checked and stored as absolute paths);
    - `slop relay job --kind grok-imagine --what still|clip --prompt TEXT ...`: browser work for Grok on grok.com
      (the person's X plan, $0; stills and motion clips, never sung lip-sync windows);
-   - `slop relay job --kind person --text BLOCK --expect FILE`: a step only the person can do (Suno, Midjourney,
-     a sign-in);
+   - `slop relay job --kind midjourney --text PROMPT [--plate KEY] ...`, `--kind suno --title --style
+     --lyrics-file ...` and `--kind browser --url URL --note TEXT`: every other browser task, all in Grok's own
+     signed-in browser (skills midjourney and suno);
+   - `slop relay job --kind person --text BLOCK --expect FILE`: only what no browser can do for the person;
    - `slop relay inbox`: messages that arrived during the turn.
 4. `slop --json relay read --wait 200`: new say/ask items verbatim with their files (marked read), every open job
    with all its fields, the production's state, and one `grok_next` line, for example "Post these 2 messages

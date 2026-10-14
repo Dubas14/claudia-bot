@@ -3,6 +3,14 @@
 Each release is a tag `vX.Y.Z`. A bot on an older release reminds its person once ("say update"); `slop update apply`
 installs it and prints the newest entries below.
 
+## 0.3.1
+- Opus and Codex can spend again: paid steps (API stills, clips, songs) get the OpenRouter key you gave. Every spend still needs your yes.
+- ChatGPT-only setups get Codex automatically (no more "install Claude Code").
+- Wake-ups are easier: Grok asks for the two values by their labels on the routine's Webhook page (POST to, and the key: tap Generate if it is empty). The key or the whole Authorization header line both work.
+- Grok Imagine always uses the highest resolution the page offers.
+- Midjourney: one prompt per job, each saved under its plate's name, so Opus files the images by itself.
+- Opus re-reads its brief after an update, an update keeps a model you chose, and the lyric scorer runs exactly as Opus is told.
+
 ## 0.3.0
 - Wake-ups: Grok hears the moment Opus (or Codex) posts, even after its own turn ended. Grok sets up a small wake-up routine once (its key goes in a secure card); the relay calls it when there is news and Grok is not already waiting.
 

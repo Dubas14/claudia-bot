@@ -134,7 +134,7 @@ def test_next_walks_the_studio_setup(capsys, env, monkeypatch):
     rc, out = run(capsys, "onboard", "set", "coding-agents", "none")
     assert rc == 0 and out["value"] == "none"
     rc, out = run(capsys, "onboard", "next")
-    assert out["item"]["id"] == "taste" and out["next"] == "slop --project my-song taste serve --tunnel"
+    assert out["item"]["id"] == "taste" and out["item"]["next_skill"] == "claudia-relay"   # the production runs it
     rc, out = run(capsys, "onboard", "mark", "taste", "--skip", "--note", "later")
     assert rc == 0 and "warn" not in out, "taste is recommended, not required"
     rc, out = run(capsys, "onboard", "next")

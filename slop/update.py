@@ -174,8 +174,10 @@ def _refresh_brief() -> dict:
     except Exception:  # noqa: BLE001 - no relay yet: nothing to refresh
         return {"skipped": True}
     env = {**os.environ, "PYTHONPATH": str(root()) + os.pathsep + os.environ.get("PYTHONPATH", "")}
-    r = subprocess.run([sys.executable, "-m", "slop", "--json", "relay", "setup", "--engine", cfg.get("engine") or "claude"],
-                       capture_output=True, text=True, timeout=180, env=env, cwd=str(root()))
+    argv = [sys.executable, "-m", "slop", "--json", "relay", "setup", "--engine", cfg.get("engine") or "claude"]
+    if cfg.get("model"):                              # a model the person chose stays
+        argv += ["--model", str(cfg["model"])]
+    r = subprocess.run(argv, capture_output=True, text=True, timeout=180, env=env, cwd=str(root()))
     try:
         return {"ok": bool(json.loads(r.stdout).get("ok"))}
     except ValueError:

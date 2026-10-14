@@ -128,7 +128,7 @@ def test_quick_tier_walkthrough_to_all_set():
     st.set_setting("coding-agents", "none")
     r = rep("quick")
     assert item(r, "coding-agents")["state"] == "optional" and item(r, "coding-agents")["skipped"]
-    assert r["next_item"] == "first-project" and item(r, "first-project")["ask"]
+    assert r["next_item"] == "first-project" and item(r, "first-project")["next_skill"] == "claudia-relay"
     assert item(r, "suno")["state"] == "optional" and item(r, "midjourney")["state"] == "optional"
     r = rep("quick", projects=[PROJECT])
     assert r["next_item"] is None and r["hand_off"] == "claudia-relay" and r["stuck"] == []
@@ -158,7 +158,7 @@ def test_studio_asks_for_the_plans_with_one_exact_command_per_answer():
     assert r["next_item"] == "first-project"
     r = rep("studio", projects=[PROJECT])
     assert r["next_item"] == "taste"
-    assert item(r, "taste")["next_cmd"] == "slop --project my-song taste serve --tunnel"
+    assert item(r, "taste")["next_skill"] == "claudia-relay" and not item(r, "taste").get("next_cmd")
 
 
 def test_plan_none_means_skipped_and_its_dependants_follow():

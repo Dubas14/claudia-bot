@@ -33,7 +33,7 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 - **Grok Imagine, on your X or SuperGrok plan ($0 extra):** stills and video clips of Claudia straight from grok.com. The free way to get her moving.
 - **Midjourney Standard, about $30:** film-grade stills, the way her four films were made. Cheaper: Basic (about $10), or Grok Imagine only.
 - **Suno Pro, about $10:** her songs; a paid plan is what lets you release them. Cheaper: your own song, or a short generated one (cents).
-- **OpenRouter, pay as you go:** Seedance lip sync, so Claudia sings your song on camera: about $0.23 a second at 720p, $50-110 for a music video. Cheaper: 480p drafts (about $0.10 a second), Higgsfield credits, or no lip sync.
+- **OpenRouter, pay as you go:** Seedance lip sync, so Claudia sings your song on camera: about $0.23 a second at 720p, $50-110 for a music video. Cheaper: 480p drafts (about $0.10 a second), or no lip sync.
 
 Just a still or a clip? Claude plus your X plan is enough. Grok usage: I only relay, so even a whole video costs few of my replies.
 

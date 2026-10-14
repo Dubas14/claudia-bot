@@ -1072,10 +1072,10 @@ def _taste(ctx: Ctx) -> dict:
     if not p:
         return {"raw": "blocked", "data": data, "blocked_by": ["first-project"],
                 "why": f"{taps} taps so far; the tap app runs inside a project (first-project)"}
-    return {"raw": "todo", "data": data, "next_cmd": _pcmd(p["name"], "taste serve --tunnel"), "next_skill": "taste",
+    return {"raw": "todo", "data": data, "next_skill": "claudia-relay",
             "why": f"{taps} of {TASTE_TAPS} recommended taps{meter}",
-            "do": "send the user the phone link it prints (about 7 min of taps); no tunnel: "
-                  + _pcmd(p["name"], "taste sheet")}
+            "do": "the taste session is the production's: pass 'start my taste session' with `slop --json relay send` "
+                  "(it posts the phone link: about 7 min of taps)"}
 
 
 def _first_project(ctx: Ctx) -> dict:
@@ -1085,10 +1085,9 @@ def _first_project(ctx: Ctx) -> dict:
         more = f"{len(ps)} projects; newest" if len(ps) > 1 else "project"
         return {"raw": "done", "next_cmd": _pcmd(p["name"], "status"),
                 "why": f"{more} {p['name']}" + (f" ({p['tier']} tier)" if p.get("tier") else "")}
-    return {"raw": "todo", "next_skill": "claudia-setup", "why": "no project yet",
-            "ask": "What is the song's title (or a working title), and in one line, what should the video be about?",
-            "do": f"then: slop new NAME --title 'TITLE' --tier {ctx.tier} (NAME = the title in lowercase-with-dashes), "
-                  "and record their line verbatim: slop --project NAME brief 'THEIR LINE'"}
+    return {"raw": "todo", "next_skill": "claudia-relay", "why": "no project yet",
+            "do": "the production makes the project with the person's first request: pass their words with "
+                  "`slop --json relay send`"}
 
 
 FUNCS = {"tier": _tier, "toolkit": _toolkit, "path": _path, "doctor": _doctor, "full-profile": _full,

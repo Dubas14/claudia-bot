@@ -13,7 +13,7 @@ You are the hands. Opus wrote every prompt; you never change a word, never pick 
 3. Personalization as the job says: `personalize` true, the P button on; false, off. Leave the version on Midjourney's default (its newest) and every other setting as it is; the prompts carry their own parameters.
 4. For each prompt in `text`, in order: paste it exactly into the prompt box and press Enter. Each one runs as its own Midjourney job.
 5. Wait until every prompt shows its four images (about a minute each). Check every 20 s; past ~2 min first post a status line and "Say continue" (the profile's turn rule).
-6. Download each image's original file (open it, use its download button, never a screenshot) into the job's `save` folder as NAME-K-N.png: K = the prompt's number from 1, N = the image from 1 to 4.
+6. Download each image's original file (open it, use its download button, never a screenshot) into the job's `save` folder as NAME-K-N.png: K = the prompt's number from 1, N = the image from 1 to 4. When the job has `plates`, name prompt K's images PLATE-N.png instead (PLATE = the K-th entry).
 7. `slop --json relay done JOB --file PATH` with one --file per image. Then one line to the person, e.g. "Midjourney: 6 prompts, 24 images, sent to Opus."
 
 ## When it goes wrong

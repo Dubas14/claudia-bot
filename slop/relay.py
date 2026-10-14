@@ -445,13 +445,59 @@ def _shim(rd: Path) -> Path:
     return d
 
 
+def _setup_engine(a_engine: str | None, rd: Path) -> str:
+    """--engine; else the engine the relay already runs; else the one installed and signed in here (Claude Code
+    first); else the person's plans (`onboard set coding-agents`: ChatGPT only means Codex); else Claude Code."""
+    from .agents import engines as E
+    from .agents import status as S
+    if a_engine:
+        return E.norm_engine(a_engine)
+    cur = _read_json(rd / "config.json").get("engine")
+    if cur in ENGINES:
+        return cur
+    for e in ENGINES:
+        try:
+            s = S.engine_status(e)
+        except Exception:  # noqa: BLE001 - an engine that cannot be checked is not the one
+            continue
+        if s.get("installed") and s.get("logged_in"):
+            return e
+    try:
+        from .onboard import state as OS
+        plans = (OS.load().get("settings") or {}).get("coding_agents") or []
+    except Exception:  # noqa: BLE001
+        plans = []
+    return "codex" if "codex" in plans and "claude" not in plans else "claude"
+
+
+def _login_path_hook() -> list[str]:
+    """Codex runs its commands in login shells, and a login shell may reset PATH (Debian's /etc/profile does): load
+    the toolkit's env.sh from ~/.profile and ~/.bashrc too, as the onboarding `path` item does. -> the files changed."""
+    env_sh = slop_home() / "env.sh"
+    if not env_sh.is_file():
+        return []
+    done = []
+    for f in (".profile", ".bashrc"):
+        p = Path.home() / f
+        try:
+            text = p.read_text(encoding="utf-8") if p.is_file() else ""
+            if str(env_sh) in text:
+                continue
+            with open(p, "a", encoding="utf-8", newline="\n") as fh:
+                fh.write(("" if not text or text.endswith("\n") else "\n") + f". {env_sh}\n")
+            done.append(f)
+        except OSError:
+            pass
+    return done
+
+
 def cmd_setup(a) -> dict:
     from .agents import engines as E
     from .agents import status as S
-    eng = E.norm_engine(a.engine)
+    wd, rd = _dirs()
+    eng = _setup_engine(a.engine, rd)
     if eng not in ENGINES:
         raise SlopError(f"the relay runs Claude Code (claude) or Codex (codex), not {eng}")
-    wd, rd = _dirs()
     title = E.SPEC[eng]["title"]
     s = S.engine_status(eng)
     if not s["installed"] or not s["logged_in"]:
@@ -473,6 +519,7 @@ def cmd_setup(a) -> dict:
         "ok": False, "skipped": True, "why": "--no-skill" if a.no_skill else "Codex reads the MCP and AGENTS.md"}
     briefs = _write_briefs(wd, eng, a.force)
     _shim(rd)
+    hooked = _login_path_hook()
     model = a.model if a.model is not None else DEFAULT_MODEL[eng]
     with _lock(rd):
         _write_json(rd / "config.json", {"engine": eng, "model": model or None, "set_up": util.iso_now(),
@@ -493,6 +540,8 @@ def cmd_setup(a) -> dict:
              "  Claudia skill: " + (f"installed in {skill['dir']} ({', '.join(skill['skills']) or 'files'})"
                                     if skill.get("ok") else f"skipped: {skill.get('why')}")]
     lines += [f"  brief: {b['file']}" + ("" if b["written"] else f" NOT written: {b['why']}") for b in briefs]
+    if hooked:
+        lines.append("  login shells now load env.sh too: " + ", ".join(f"~/{f}" for f in hooked))
     nxt = "slop --json relay send '<the person's words, verbatim>'"
     err = None
     if not mcp.get("ok"):
@@ -684,6 +733,13 @@ def cmd_job(a) -> dict:
         if not a.text:
             raise SlopError("a midjourney job needs its prompts: --text '<one full prompt with its parameters>', once "
                             "per prompt (each becomes its own Midjourney job of four images)")
+        if any(re.search(r"\{[^{}]*,[^{}]*\}", t.replace("\\,", "")) for t in a.text):
+            raise SlopError("one prompt per --text: a {a, b} permutation block runs several Midjourney jobs; send each "
+                            "Sheet A line as its own --text (plates/mj/BATCH.lines.txt)")
+        plates_ = [p.strip() for p in (a.plate or []) if p.strip()]
+        if plates_ and len(plates_) != len(a.text):
+            raise SlopError(f"--plate: one per --text, in the same order ({len(a.text)} prompts, {len(plates_)} "
+                            "plates)")
         # the person's Midjourney setup, whatever the prompt says: no --v (its default is its newest model), no
         # profile code (Grok presses the P button), --raw / --hd as they chose (project.json mj)
         from .board.plates import mj_line
@@ -694,7 +750,7 @@ def cmd_job(a) -> dict:
             texts.append(line)
             adjusted += [d for d in did if d not in adjusted]
         pers = a.personalize or ("on" if mj.get("personalize", True) else "off")
-        rec.update(text=texts, expect_count=4 * len(texts), personalize=pers == "on")
+        rec.update(text=texts, expect_count=4 * len(texts), personalize=pers == "on", plates=plates_ or None)
     elif a.kind == "suno":
         lyrics = _read_text(a.lyrics, a.lyrics_file, "lyrics")
         if not (a.style or "").strip():
@@ -820,7 +876,8 @@ def _render_item(r: dict) -> str:
 
 
 JOB_FIELDS = ("id", "job", "job_kind", "what", "prompt", "image", "aspect", "seconds", "save", "name", "note", "text",
-              "expect", "title", "style", "lyrics", "exclude", "instrumental", "url", "personalize", "expect_count",
+              "expect", "title", "style", "lyrics", "exclude", "instrumental", "url", "personalize", "plates",
+              "expect_count",
               "status", "ts")
 SKILL_FOR = {"grok-imagine": "grok-imagine", "midjourney": "midjourney", "suno": "suno"}
 
@@ -831,9 +888,12 @@ def _job_item(j: dict) -> dict:
 
 def _render_job(j: dict) -> str:
     s = f"job {j['job']} ({j.get('job_kind')}{', ' + j['what'] if j.get('what') else ''}): {j.get('status')}"
-    for k in ("prompt", "image", "aspect", "seconds", "save", "name", "note"):
-        if j.get(k) not in (None, ""):
-            s += f"\n   {k}: {j[k]}"
+    for k in ("prompt", "image", "aspect", "seconds", "url", "title", "style", "exclude", "instrumental", "plates",
+              "save", "name", "note"):
+        if j.get(k) not in (None, "", [], False):
+            s += f"\n   {k}: {', '.join(j[k]) if isinstance(j[k], list) else j[k]}"
+    if j.get("lyrics"):
+        s += "\n   lyrics:\n" + str(j["lyrics"])
     if j.get("job_kind") == "midjourney":
         s += f"\n   personalization (the P button): {'on' if j.get('personalize', True) else 'off'}"
     for i, block in enumerate(j.get("text") or [], 1):
@@ -852,7 +912,8 @@ def _grok_next(items: list, prod: dict, jobs: list) -> str:
     for j in jobs:
         k = j.get("job_kind")
         if k in SKILL_FOR or k == "browser":
-            how = f"skill {SKILL_FOR[k]}" if k in SKILL_FOR else "your browser, doing what its note says"
+            how = (f"skill {SKILL_FOR[k]}" if k in SKILL_FOR else
+                   f"your browser at {j.get('url') or 'the page its note names'}, doing what its note says")
             if k == "midjourney":
                 how += f", the P button {'on' if j.get('personalize', True) else 'off'}"
             steps.append(f"run job {j['job']} with {how} (save into {j.get('save')}, then `slop --json "
@@ -1078,8 +1139,20 @@ def cmd_stop(a) -> dict:
 # ================================================================================================== the supervisor
 def _prompt(wd: Path, cfg: dict, n: int, msgs: list[dict], prev_err: dict | None) -> str:
     brief = BRIEF_FILES.get(cfg.get("engine"), "CLAUDE.md")
+    read_it = "read it now if this session has not"
+    try:                                              # an update rewrites the brief: a resumed session reads it again
+        import hashlib
+        sha = hashlib.sha1((wd / brief).read_bytes()).hexdigest()
+        mark = relay_dir() / "brief.sha"
+        old = mark.read_text(encoding="utf-8").strip() if mark.is_file() else None
+        if old != sha:
+            if old:
+                read_it = "it changed since you last read it: read it again now"
+            util.atomic_write_text(mark, sha + "\n")
+    except OSError:
+        pass
     lines = [f"[slop relay] Production turn {n}. You work in {wd.as_posix()} (the projects folder).",
-             f"You are the production; your brief is {brief} in this folder (read it now if this session has not).", ""]
+             f"You are the production; your brief is {brief} in this folder ({read_it}).", ""]
     if prev_err:
         lines += [f"Note: turn {prev_err.get('turn')} ended with an error ({str(prev_err.get('error'))[:300]}). It may "
                   "have done part of the work: check before redoing it.", ""]
@@ -1173,7 +1246,8 @@ def engine_argv(eng: str, base: list[str], prompt_arg: str, prompt: str, model: 
             argv += ["--resume", session]
         return argv, None
     common = ["--json", "--skip-git-repo-check", "-c", 'forced_login_method="chatgpt"',
-              "-c", 'sandbox_mode="danger-full-access"', "-c", 'approval_policy="never"']
+              "-c", 'sandbox_mode="danger-full-access"', "-c", 'approval_policy="never"',
+              "-c", "shell_environment_policy.ignore_default_excludes=true"]   # keep the toolkit's keys for its commands
     if model:
         common += ["-m", model]
     if effort:
@@ -1241,6 +1315,9 @@ def _engine_run(wd: Path, rd: Path, cfg: dict, n: int, prompt: str, session: str
         "PYTHONPATH": root + (os.pathsep + pp if pp and root not in pp.split(os.pathsep) else "")})
     for k in JOB_ENV:
         env.pop(k, None)
+    for k in E.TOOLKIT_SECRETS:       # the production is the spender: each paid step asks --yes, its gate and its caps
+        if os.environ.get(k):
+            env[k] = os.environ[k]
     env["PATH"] = str(shim) + os.pathsep + env.get("PATH", "")
     ps: dict = {"session": session, "final": None, "is_error": False, "error": None, "text": ""}
     t0 = time.time()
@@ -1586,7 +1663,8 @@ def register(sub) -> None:
 
     p = add("setup", help="check the engine is signed in, register the claudia.gallery MCP, install the Claudia "
                           "skill, write the production brief (CLAUDE.md, AGENTS.md in the projects folder)")
-    p.add_argument("--engine", default="claude", help="claude (default) | codex")
+    p.add_argument("--engine", default=None, help="claude | codex (default: the engine the relay runs, else the "
+                                                  "one signed in here, Claude Code first; ChatGPT only: codex)")
     p.add_argument("--model", default=None, help="the production's model (default: opus for Claude Code; Codex's own)")
     p.add_argument("--no-skill", action="store_true", help="do not download the Claudia skill")
     p.add_argument("--force", action="store_true", help="replace a CLAUDE.md / AGENTS.md that slop relay did not write")
@@ -1653,6 +1731,8 @@ def register(sub) -> None:
     p.add_argument("--exclude", help="suno: the Exclude styles field")
     p.add_argument("--instrumental", action="store_true", help="suno: an instrumental (no lyrics)")
     p.add_argument("--url", help="browser: the page to start on")
+    p.add_argument("--plate", action="append", help="midjourney: the plate each --text is for (one per --text, in "
+                                                    "order); Grok names the downloads PLATE-N.png for plates ingest")
     p.add_argument("--personalize", choices=["on", "off"],
                    help="midjourney: Grok switches the person's personalization on with the P button (default: the "
                         "project's mj.personalize, else on); a profile code never goes into a prompt")

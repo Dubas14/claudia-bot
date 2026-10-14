@@ -75,8 +75,16 @@ MIDV = {'EH', 'AH', 'UH', 'ER', 'IH'}
 
 @functools.lru_cache(None)
 def cmu():
-    import cmudict
-    return cmudict.dict()
+    try:
+        import cmudict
+        return cmudict.dict()
+    except ImportError:               # the toolkit's own copy of the CMU dictionary (slop/audio/pron.py)
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+        from slop.audio import pron
+        d = pron.cmu()
+        if not d:
+            sys.exit("scansion: no CMU dictionary: install the toolkit (bash bin/setup.sh) or pip install cmudict")
+        return d
 
 
 @functools.lru_cache(None)

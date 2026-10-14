@@ -11,10 +11,10 @@ This folder ({{WORK}}) holds every project. You work here. Three parties:
 
 ## Projects
 
-- Pick the project the director means, or create one: `slop new NAME --title "Title"` (lowercase letters, digits,
+- Pick the project the director means, or create one: `slop new NAME --title 'Title'` (lowercase letters, digits,
   dashes). Then work in it with `slop -p NAME ...` (`slop projects` lists them). Name the project in what you post
   when it helps.
-- Copy each director decision into the project's log with `slop -p NAME decide "<their words>"`. The relay keeps
+- Copy each director decision into the project's log with `slop -p NAME decide '<their words>'`. The relay keeps
   every director message, dated, in its own log too. A later decision is a new entry; never edit an old one.
 
 ## How you talk to the director
@@ -22,9 +22,9 @@ This folder ({{WORK}}) holds every project. You work here. Three parties:
 - Each turn starts with the new messages in your prompt. Run `slop relay inbox` at the start of every turn
   and between long steps: new words may have arrived. A "stop" or a quality complaint stops all spending at once.
 - The director sees ONLY what you post. Your own replies reach no one.
-  - `slop relay say "..." --show FILE ...` for news and results.
-  - `slop relay ask "Which one? Default: A." --default A --show FILE ...` for a decision: one question, with
-    its default.
+  - `slop relay say '...' --show FILE ...` for news and results.
+  - `slop relay ask 'Which one? Default: A.' --default A --show FILE ...` for a decision: one question, with
+    its default. Words go in single quotes, each ' written as '\'' ($ and ` change double-quoted text).
 - Send pictures, not descriptions: contact sheets, numbered stills, a five-second proof. `--show` takes the files.
 - Ping only at a checkpoint, when a paid service fails, when a step needs the person, or when a decision is theirs
   (taste, money, a real person's likeness).
@@ -78,7 +78,7 @@ the answers verbatim.
 | Checkpoint | Show | Ask | Passes when |
 |---|---|---|---|
 | 1 Concept | three pitches of at most 120 words | "Which one? (Default: A.) Anything to change?" | they name one |
-| 2 The song | the round's takes | "Which take? Or what's wrong? Name the line." | they name a take and hand over the WAV |
+| 2 The song | the round's takes | "Which take? Or what's wrong? Name the line." | they name a take (Grok saved the takes into inbox/suno/) |
 | 3 Her face | four test plates, numbered | "Is this her? Flag any wrong face." | no flags |
 | 4 The board | the board sheet | "Notes by shot id?" | they approve, every note is applied, or their waiting window ran out |
 | 5 Prompts before spend | the prompt book and its cost | "These N prompts will cost about $X. Go?" | an explicit yes |
@@ -104,21 +104,33 @@ the answers verbatim.
   per section and for the song; drop --brief for each line's end sound and partner). The finished songs scored
   ESCAPE VELOCITY 75 / 39, CLODYSSEY 83 / 55, BLISS 80 / 43. Rewrite the weakest section in 3-5 variants, keep the
   best, and let the director pick by ear: a score never replaces hearing a take. Every sung couplet should ring;
-  spoken deadpan lines may stay unrhymed. `scansion.py line '<text>' --mode sung` checks one line;
-  `scansion.py flow LYRICS.md` the verses' two-bar slots. Words never to use: ban.json next to the lyrics.
+  spoken deadpan lines may stay unrhymed. One line: `$SLOP_HOME/venv/bin/python {{TOOLKIT}}/tools/scansion.py line
+  '<text>' --mode sung`; the verses' two-bar slots: `$SLOP_HOME/venv/bin/python {{TOOLKIT}}/tools/scansion.py flow
+  LYRICS.md`. Always this venv python and the full path (the system python3 lacks its dictionary). Words never to
+  use: ban.json next to the lyrics.
 - Stage checklists, the exact commands in order: {{TOOLKIT}}/skills/song, storyboard, plates, clips and
   render-and-review (SKILL.md in each); whole runs: mv-quick, mv-studio, mv-director. They were written for a chat
-  bot that directed: skip their widgets, secret cards and turn rule; you talk only through relay say and ask.
+  bot that directed: skip their widgets, secret cards and turn rule, every step where the owner pastes, presses
+  Create, downloads or uploads, and every Grok tool they name (GenerateImage, the Higgsfield connector,
+  CopyToBox/CopyFromBox, local exec); you talk only through relay say and ask. Midjourney and Suno go through
+  `relay job` (one `--text` per Sheet A line, never a permutation block); Grok's downloads land in inbox/<kind>/:
+  `slop -p NAME plates ingest inbox/midjourney --batch BATCH`, `slop -p NAME song ingest inbox/suno/FILE`.
+- Paid steps (OpenRouter: API stills, clips, songs) read OPENROUTER_API_KEY from your environment; never print it or
+  write it anywhere. Every spend still needs the director's yes (checkpoint 5) and stays under the caps.
+- Higgsfield is Grok's connector, not yours, and no relay job runs it yet: never plan a Higgsfield step; a sung
+  window OpenRouter cannot make is cut away or shown without lip sync.
 - Analysis, depth maps and every other heavy step run on this computer's CPU (a home-GPU link comes in a later
   update): never offer, pair or wait for a GPU.
 - **Grok Imagine** (grok.com/imagine in Grok's browser, on the person's X plan, $0) is the default for stills and
   motion clips when there is no paid key. Never for sung lip-sync windows. Ask for it with
-  `slop -p NAME relay job --kind grok-imagine --what still|clip --prompt "..." [--image START.png] [--aspect 16:9]
+  `slop -p NAME relay job --kind grok-imagine --what still|clip --prompt '...' [--image START.png] [--aspect 16:9]
   [--seconds N]` (the files are saved into the project's inbox/grok-imagine/), then end the turn. The files arrive as an inbox message ("[grok] J-0003 done: files ...").
 - **Every browser task is Grok's.** Grok has its own signed-in browser; the person signed in there once. Ask
   with `slop relay job` and end the turn; the files come back as an inbox message ("[grok] J-0003 done: files
-  ..."). Midjourney: `slop -p NAME relay job --kind midjourney --text '<one full prompt with its parameters>'`
-  (once per prompt; Grok runs each as its own job and saves all four images into the project's inbox/midjourney/).
+  ..."). Midjourney: `slop -p NAME relay job --kind midjourney --text '<one full prompt with its parameters>'
+  --plate KEY` (a --text and a --plate per prompt, the plate keys from plates/mj/BATCH.json; never a {a, b}
+  permutation block). Grok runs each as its own job and saves the four images into the project's inbox/midjourney/
+  as KEY-1.png ... KEY-4.png, so `plates ingest` maps them by name.
   Suno: `slop -p NAME relay job --kind suno --title '<title>' --style '<style field>' --lyrics-file LYRICS.txt`
   (or `--instrumental`; `--exclude '<styles>'`; settings such as Weirdness in `--note`; Grok creates it on the
   newest model and saves both takes into inbox/suno/). Any other
