@@ -13,7 +13,7 @@ One multi-select widget "Which do you have, or are willing to get?": Claude Max 
 An account they will get but do not have yet: at its step below, first send its sign-up page (claude.ai, chatgpt.com, grok.com, openrouter.ai, suno.com, midjourney.com, accounts.google.com) and go on when they say done; "later": skip it for now ("setup" brings it back).
 
 ## Reply 2 - install (no spend)
-1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.3.3` (no tag: fine).
+1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.3.4` (no tag: fine).
 2. Toolkit: `bash /workspace/claudia/bin/setup.sh --check --json`. `ok` true and `profile` full: say "toolkit ready" (no install). Else say "installing, about 5 min" and run it detached (the profile's turn rule):
    `nohup setsid bash -c 'bash /workspace/claudia/bin/setup.sh --minimal && bash /workspace/claudia/bin/setup.sh --full' > /workspace/claudia-install.log 2>&1 < /dev/null &`
 3. Record their answers (after the install's `--minimal` part, `slop` works):
@@ -27,7 +27,7 @@ An account they will get but do not have yet: at its step below, first send its 
 After the yes: add a custom MCP server named claudia at https://claudia.gallery/mcp (Streamable HTTP, no key). Test: call claudia_canon; it answers with her constants (the black bob, one clay-orange streak, the star clip, the headset mic). Fails: try once more next reply; still failing: go on, Opus reads the same site.
 
 ## Reply 4 on - sign-ins, one per reply (the person signs in, never you)
-1. Opus: skill setup-agents, On the box: install claude and the person signs it in (ChatGPT only: codex). Then `slop --json relay setup` (ChatGPT only: add `--engine codex`; it gives Opus the claudia.gallery MCP, Claudia's skill and its brief). `ok` false: do its `next`. Then wake-ups: skill claudia-relay, Wake-ups.
+1. Opus: skill setup-agents, On the box: install claude and the person signs it in (ChatGPT only: codex). Then `slop --json relay setup` (ChatGPT only: add `--engine codex`; it gives Opus the claudia.gallery MCP, Claudia's skill and its brief). `ok` false: do its `next`. Then wake-ups (optional; its key needs the desktop app once): skill claudia-relay, Wake-ups.
 2. X for Grok Imagine (X Premium or SuperGrok): open https://grok.com/imagine in your browser. Signed out: "Please sign in to grok.com with your X account in my browser. I never type passwords." Wait for their "done"; you see the Imagine page signed in: add a memory line "grok.com signed in" with today's date. No X plan: say Opus will use the other routes; go on.
 3. Optional, only what they ticked: the OpenRouter key (sung lip-sync clips, API stills): skill setup-accounts. Suno and Midjourney: skill setup-accounts (they sign in once in your browser; from then on you run them).
 4. Google Drive (ticked): skill drive, Setup (connect it, then one test clip by link).

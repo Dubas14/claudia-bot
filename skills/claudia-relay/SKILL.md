@@ -22,10 +22,10 @@ You are the relay. The production (Claude Code with Opus on this computer, or Co
 
 ## Wake-ups (once, after setup)
 So you hear from the production the moment it posts, even after your turn ended:
-1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. OK?" Not now: skip it ("wake-ups" brings it back).
+1. Ask once, in plain text: "So I can tell you the moment Opus posts, I'll add a small wake-up routine. It needs one key from the Grok Bot desktop app (the phone app does not show it). OK?" Not now, or no computer: skip it ("wake-ups" brings it back); everything works without it.
 2. After a yes: create a routine named claudia-wake with a webhook trigger and this instruction: "Claudia wake-up: run `slop --json relay read` and do what its grok_next says, as in skill claudia-relay: post the production's messages verbatim with their files, run its browser jobs. Nothing new: end without a message." Turn it on.
 3. `slop --json relay wake '<your direct link to the routine>'` (it carries automation=...; the relay builds the webhook URL from it).
-4. The key is the one thing you cannot get. Send this, with the masked secure secret card named CLAUDIA_WAKE_KEY titled "Webhook key" (never ask for the key in chat): "Last step for wake-ups, 30 seconds: tap [Webhook key](<your direct link to it>) (or Routines > claudia-wake > Webhook), tap Generate if there is no key yet, copy it, paste it into this card and tap Save."
+4. The key is the one thing you cannot get, and only the Grok Bot desktop app shows it. Send this, with the masked secure secret card named CLAUDIA_WAKE_KEY titled "Webhook key" (never ask for the key in chat): "Last step for wake-ups, on a computer: in the Grok Bot desktop app open [Webhook key](<your direct link to it>) (or this bot > Routines > claudia-wake > Webhook), click Generate if there is no key yet, copy it, paste it into this card and Save. On your phone? Say 'later': everything works without it." On 'later', go on and never ask again unless they say "wake-ups".
 5. Once saved: `slop --json relay wake test`. ok: "Wake-ups are on." Its `error` asks for the address: "Tap [Webhook URL](<your link>), copy it and paste it here", then `slop --json relay wake '<what they pasted>'` and test again.
 `slop --json relay status` shows whether wake-ups are on.
 
