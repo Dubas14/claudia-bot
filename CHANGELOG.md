@@ -3,6 +3,9 @@
 Each release is a tag `vX.Y.Z`. A bot on an older release reminds its person once ("say update"); `slop update apply`
 installs it and prints the newest entries below.
 
+## 0.2.7
+- The home-GPU link is parked until it works from every bot (a relay is in the works); analysis runs on the bot's computer meanwhile.
+
 ## 0.2.6
 - Updates: a quiet reminder once per new release, and "update" installs it in one step (code, install, brief, skills).
 

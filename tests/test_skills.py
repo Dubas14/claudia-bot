@@ -73,7 +73,8 @@ def test_recipe_matches_the_template_schema(built):
     recipe, _, _ = built
     assert set(recipe) == {"profile", "memory", "skills", "routines", "plugins", "gettingStarted"}
     assert recipe["profile"]["name"] == "Claudia" and recipe["profile"]["description"].strip()
-    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 8
+    assert [s["name"] for s in recipe["skills"]] == BR.ORDER and len(BR.ORDER) == 7
+    assert "setup-gpu" not in BR.ORDER and (SKILLS / "setup-gpu" / "SKILL.md").is_file(), "parked, not shipped"
     for s in recipe["skills"]:
         assert set(s) == {"name", "description", "content"} and all(s.values())
         assert s["content"] == read(SKILLS / s["name"] / "SKILL.md")           # the whole file, front matter included
@@ -251,7 +252,7 @@ def test_the_checklist_names_the_onboarding_skills():
     """slop/onboard falls back to other skills until setup-accounts/-agents/-gpu ship: they ship now."""
     from slop.onboard import items
     for name in items.SKILL_FALLBACK:
-        assert (SKILLS / name / "SKILL.md").is_file() and name in BR.ORDER, name
+        assert (SKILLS / name / "SKILL.md").is_file() and name in BR.ORDER + BR.PARKED, name
         assert items.skill(name) == name
 
 

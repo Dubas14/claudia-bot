@@ -35,11 +35,21 @@ def test_the_welcome_says_what_each_subscription_gets_you_with_cheaper_alternati
     subs = WELCOME[WELCOME.index("**What each subscription gets you**"):WELCOME.index("## Then ask")]
     assert "**Claude Max 20x, about $200 (recommended):**" in subs and "Max 5x (about $100)" in subs
     for must in ("Pro (about $20)", "ChatGPT Plus", "Grok Imagine", "Midjourney Standard", "Suno Pro", "Seedance",
-                 "OpenRouter", "NVIDIA GPU", "check current prices"):
+                 "OpenRouter", "check current prices"):
         assert must in subs, must
     bullets = [ln for ln in subs.splitlines() if ln.startswith("- **")]
-    assert len(bullets) == 6 and all(":**" in b for b in bullets), "each subscription says what it gets you"
+    assert len(bullets) == 5 and all(":**" in b for b in bullets), "each subscription says what it gets you"
     assert sum("Cheaper:" in b for b in bullets) >= 4
+
+
+def test_the_shipped_bot_never_offers_the_parked_home_gpu(monkeypatch):
+    for f in [*(SKILLS / s / "SKILL.md" for s in BR.ORDER), SKILLS / "profile.md", ROOT / "templates" / "production-brief.md"]:
+        text = read(f)
+        assert "setup-gpu" not in text and "NVIDIA" not in text and "gpu pair" not in text, f.name
+    monkeypatch.delenv("SLOP_GPU", raising=False)
+    from slop.onboard import items as I
+    r = I._gpu(type("C", (), {"gpu": {"available": True, "mode": "none", "ok": True}})())
+    assert r["raw"] == "skipped" and "later update" in r["why"] and "ask" not in r
     assert "Nothing is spent without your yes" in WELCOME and "claudia.gallery" in WELCOME
 
 

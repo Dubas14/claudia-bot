@@ -38,7 +38,10 @@ DIST = SKILLS_DIR / "dist" / "recipe.json"
 
 # the Grok side: sign-ins and delegation only (Opus on the box is the production)
 ORDER = ["claudia-welcome", "claudia-setup", "claudia-relay", "grok-imagine", "setup-accounts", "setup-agents",
-         "setup-gpu", "claudia-toolkit"]
+         "claudia-toolkit"]
+# kept in the repository, not shipped yet: the home-GPU link waits for the relay (the bot's computer cannot open a
+# quick tunnel); `slop gpu` itself is switched off unless SLOP_GPU=1
+PARKED = ["setup-gpu"]
 # stage guides kept in the repository for the production (Opus reads them); not part of the Grok Bot template
 PRODUCTION = ["mv-quick", "mv-studio", "mv-director", "song", "taste", "storyboard", "plates", "clips",
               "render-and-review", "browser-assist"]
@@ -147,7 +150,7 @@ def nbytes(s: str) -> int:
 def load_skills(problems: list[str]) -> list[dict]:
     skills = []
     dirs = sorted(p.parent.name for p in SKILLS_DIR.glob("*/SKILL.md"))
-    extra = [d for d in dirs if d not in ORDER and d not in PRODUCTION]
+    extra = [d for d in dirs if d not in ORDER and d not in PRODUCTION and d not in PARKED]
     missing = [s for s in ORDER if s not in dirs]
     if extra:
         problems.append(f"skills not in ORDER (add them to build_recipe.ORDER or remove them): {', '.join(extra)}")

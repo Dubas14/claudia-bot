@@ -39,7 +39,7 @@ _spec = importlib.util.spec_from_file_location("build_recipe_polish", SKILLS / "
 BR = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(BR)
 
-SKILL = {s: SKILLS / s / "SKILL.md" for s in BR.ORDER + BR.PRODUCTION}
+SKILL = {s: SKILLS / s / "SKILL.md" for s in BR.ORDER + BR.PRODUCTION + BR.PARKED}
 SOURCES = (list(SKILL.values()) + [SKILLS / "profile.md", SKILLS / "memory.md"]
            + sorted((SKILLS / "routines").glob("*.md")))
 

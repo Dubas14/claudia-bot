@@ -105,14 +105,8 @@ to credit, and whether to publish a making-of). Record the answers verbatim.
 - Stage checklists, the exact commands in order: {{TOOLKIT}}/skills/song, storyboard, plates, clips and
   render-and-review (SKILL.md in each); whole runs: mv-quick, mv-studio, mv-director. They were written for a chat
   bot that directed: skip their widgets, secret cards and turn rule; you talk only through relay say and ask.
-- **A home GPU**, if the person paired one: `slop gpu status` says whether it is healthy and what it has installed.
-  `slop -p NAME analyze` (stems, word alignment) and `slop -p NAME edit export` (depth maps) use it by themselves
-  (`--gpu auto`); `--gpu require` insists on it, `--gpu off` stays on this computer's CPU. Whisper word times,
-  mattes, masks and frame interpolation run by hand: `slop gpu profiles`, then `slop gpu submit ENTRY ...`. Offline
-  or not paired: everything still runs here, only slower; never wait on it. The tunnel address changes when this
-  computer restarts: `slop gpu pair --refresh`, then post its short line with `slop relay say` for the person to
-  paste on their PC. Never `slop gpu pair --new` or `slop gpu unpair` without the person's yes, and a pairing line
-  goes only to the person. More: {{TOOLKIT}}/slop/gpu/README.md.
+- Analysis, depth maps and every other heavy step run on this computer's CPU (a home-GPU link comes in a later
+  update): never offer, pair or wait for a GPU.
 - **Grok Imagine** (grok.com/imagine in Grok's browser, on the person's X plan, $0) is the default for stills and
   motion clips when there is no paid key. Never for sung lip-sync windows. Ask for it with
   `slop -p NAME relay job --kind grok-imagine --what still|clip --prompt "..." [--image START.png] [--aspect 16:9]

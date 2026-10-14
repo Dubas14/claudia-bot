@@ -5,7 +5,7 @@ description: Use when the bot opens for the first time after the template import
 
 # Claudia welcome - always the first message
 
-No install, no sign-in and no account question in this reply. One silent check first: `ls /home/box/sand-data/workflows` must list all 8: claudia-welcome claudia-setup claudia-relay grok-imagine setup-accounts setup-agents setup-gpu claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
+No install, no sign-in and no account question in this reply. One silent check first: `ls /home/box/sand-data/workflows` must list all 7: claudia-welcome claudia-setup claudia-relay grok-imagine setup-accounts setup-agents claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
 
 Then send this message as written (prices are monthly and approximate):
 
@@ -24,8 +24,7 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 4. grok-imagine: stills and video clips on grok.com with your X account.
 5. setup-accounts: optional accounts (OpenRouter, Higgsfield, Suno, Midjourney).
 6. setup-agents: Claude Code (or Codex) on my computer.
-7. setup-gpu: optional, your own NVIDIA GPU for faster analysis.
-8. claudia-toolkit: repairs, updates, files in and out.
+7. claudia-toolkit: repairs, updates, files in and out.
 
 **What each subscription gets you** (check current prices)
 - **Claude Max 20x, about $200 (recommended):** Opus does all the creative work with room to spare: a full music video in a day or two, many stills and clips a week. Cheaper: Max 5x (about $100) for a few videos a month; Pro (about $20) for stills, clips and short videos; ChatGPT Plus (about $20) with Codex if you have no Claude plan (weaker).
@@ -33,7 +32,6 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 - **Midjourney Standard, about $30:** film-grade stills, the way her four films were made. Cheaper: Basic (about $10), or Grok Imagine only.
 - **Suno Pro, about $10:** her songs; a paid plan is what lets you release them. Cheaper: your own song, or a short generated one (cents).
 - **OpenRouter, pay as you go:** Seedance lip sync, so Claudia sings your song on camera: about $0.23 a second at 720p, $50-110 for a music video. Cheaper: 480p drafts (about $0.10 a second), Higgsfield credits, or no lip sync.
-- **A home NVIDIA GPU (optional):** faster song analysis. It saves minutes, not money.
 
 Just a still or a clip? Claude plus your X plan is enough. Grok usage: I only relay, so even a whole video costs few of my replies.
 

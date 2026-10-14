@@ -92,9 +92,9 @@ def test_setup_registers_the_mcp_installs_the_skill_and_writes_the_brief(tmp_pat
     codex = (env["home"] / ".codex" / "config.toml").read_text()     # Codex gets the claudia MCP too
     assert "[mcp_servers.claudia]" in codex and 'url = "https://claudia.gallery/mcp"' in codex
     assert out["mcp_also"]["codex"]["ok"]
-    for name in ("CLAUDE.md", "AGENTS.md"):                         # both engines know the home GPU
+    for name in ("CLAUDE.md", "AGENTS.md"):                         # the home GPU is parked: never offered
         text = (env["wd"] / name).read_text()
-        assert "slop gpu status" in text and "--gpu auto" in text and "gpu pair --refresh" in text
+        assert "never offer, pair or wait for a GPU" in text and "gpu pair" not in text
     rc, out = K.run("relay", "setup")                      # idempotent: no second registration
     assert rc == 0 and out["mcp"]["already"] is True
     assert len([c for c in K.calls(env["state"], "claude") if c["argv"][:2] == ["mcp", "add"]]) == 1

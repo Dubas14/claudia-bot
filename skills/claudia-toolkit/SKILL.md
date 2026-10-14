@@ -11,7 +11,7 @@ Code /workspace/claudia (git). Runtime /workspace/.claudia. Projects /workspace/
 1. `bash /workspace/claudia/bin/setup.sh --check --json`: `missing` names what is gone (a computer update removes packages; /workspace stays).
 2. `bash /workspace/claudia/bin/setup.sh` re-installs the last profile and downloads only what is missing. It takes minutes: run it detached, `nohup setsid bash /workspace/claudia/bin/setup.sh > /workspace/claudia-install.log 2>&1 < /dev/null &`, then repeat step 1 (the profile's turn rule). Then PATH: `grep -qs claudia/env.sh ~/.bashrc || echo '. /workspace/.claudia/env.sh' >> ~/.bashrc; grep -qs claudia/env.sh ~/.profile || echo '. /workspace/.claudia/env.sh' >> ~/.profile`.
 3. `slop --json doctor`: fix each WARN or FAIL with the line after its `->`. Once per computer: `slop --json job selftest`.
-4. Opus: `slop --json agents status`; missing after an update: `slop --json agents install claude` and `slop --json relay setup` (skill setup-agents). Home GPU: `slop --json gpu status` (skill setup-gpu). What else is missing: `slop --json onboard status` (skill claudia-setup).
+4. Opus: `slop --json agents status`; missing after an update: `slop --json agents install claude` and `slop --json relay setup` (skill setup-agents). What else is missing: `slop --json onboard status` (skill claudia-setup).
 5. /workspace/claudia gone: run the install lines in skill claudia-setup (Reply 2).
 ## Update (the person says update, or yes to the reminder)
 1. `slop --json update apply`. Opus is working: it says so; tell the person and try again after Opus finishes. Local changes: send its error.

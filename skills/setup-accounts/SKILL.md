@@ -34,7 +34,7 @@ SearchPlugins for Google Drive; missing and wanted: the same widget rule. List o
 ## Are.na (item arena; optional; docs/30-taste.md §2.4)
 Only if they keep their own channels there (for the taste pool). They create a personal access token on Are.na's developer page (dev.are.na); ask with the masked secure secret card named ARENA_TOKEN; `slop --json onboard next` sees it.
 
-## Agents, GPU, skipping
-- Claude Code, Codex (ChatGPT plan), Muse Code, Gemini CLI, ChatGPT-plan images: skill setup-agents. A home GPU: skill setup-gpu.
+## Agents, skipping
+- Claude Code, Codex (ChatGPT plan), Muse Code, Gemini CLI, ChatGPT-plan images: skill setup-agents.
 - Not now: `slop --json onboard mark ID --skip`; later `slop --json onboard mark ID --todo`. Every account can come later: the person says "setup".
 - What is left: `slop --json onboard status`.

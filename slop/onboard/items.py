@@ -35,6 +35,7 @@ or still to install (so the setup never announces an install that is already don
 from __future__ import annotations
 
 import functools
+import os
 import re
 import shlex
 from concurrent.futures import ThreadPoolExecutor
@@ -1021,7 +1022,16 @@ def _gpu_do(cmd: str, why: str) -> str:
     return "run it and follow what it prints"
 
 
+def gpu_enabled() -> bool:
+    """The home-GPU link is parked until the relay ships (the bot's computer cannot open a quick tunnel): SLOP_GPU=1
+    turns the checklist item back on."""
+    return os.environ.get("SLOP_GPU", "0").strip() == "1"
+
+
 def _gpu(ctx: Ctx) -> dict:
+    if not gpu_enabled():
+        return {"raw": "skipped", "data": {}, "why": "the home-GPU link comes in a later update; analysis runs on the "
+                                                     "bot's computer meanwhile (nothing to do)"}
     g = ctx.gpu or {}
     if not g.get("available"):
         return _unavailable("gpu", g)
