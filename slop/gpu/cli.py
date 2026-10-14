@@ -172,6 +172,13 @@ def cmd_pair(a) -> dict:
     if not url:
         raise SlopError("the job server has no tunnel URL: run `slop gpu serve` (without --no-tunnel); --url is for a "
                         "worker on this same machine (tests)")
+    if not a.url:                            # the PC must be able to reach this address, or the line is useless
+        ok, err = service.public_health(url, 20)
+        if not ok:
+            raise SlopError(f"the tunnel's public URL does not answer ({err or 'no answer'}), so no pairing line was "
+                            "made: it could never work. `slop gpu status --verify` must pass first. If the tunnel "
+                            "never connected (the computer's network blocks port 7844), use direct mode: "
+                            "`slop gpu direct-plan`")
     if a.refresh:
         if not store.has_code():
             raise SlopError("nothing is paired yet: run `slop gpu pair` (without --refresh)")

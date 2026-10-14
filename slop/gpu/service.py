@@ -147,10 +147,10 @@ def _cloudflared() -> str:
 
 
 def _start_tunnel(port: int, wait_s: float) -> tuple[int, str]:
-    from ..gen.hosting import tunnel_url
+    from ..gen.hosting import await_edge, cloudflared_cmd, tunnel_url
     log = store.gdir() / "tunnel.log"
     log.write_text("", encoding="utf-8")
-    tun = spawn([_cloudflared(), "tunnel", "--no-autoupdate", "--url", f"http://127.0.0.1:{port}"], log)
+    tun = spawn(cloudflared_cmd(_cloudflared(), port), log)
     t_end = time.monotonic() + wait_s
     url = None
     while time.monotonic() < t_end:
@@ -168,6 +168,11 @@ def _start_tunnel(port: int, wait_s: float) -> tuple[int, str]:
         raise SlopError("the Cloudflare quick tunnel did not come up (no URL in cloudflared's banner, or it exited): the "
                         "box may have no outbound access to Cloudflare (port 7844). Use direct mode instead: "
                         "`slop gpu direct-plan`. cloudflared said: " + tail.strip()[-300:])
+    ok, why = await_edge(tun, log, public_ok=lambda: public_health(url, 5)[0])
+    if not ok:
+        kill(tun.pid)
+        raise SlopError(why + " No pairing line was made. Use direct mode instead (no tunnel: the bot runs the worker "
+                        "on the PC through Grok Bot local exec): `slop gpu direct-plan`.")
     return tun.pid, url
 
 

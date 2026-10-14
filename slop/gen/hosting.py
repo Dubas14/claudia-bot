@@ -45,6 +45,73 @@ from ..config import SlopError, slop_home
 URL_RE = re.compile(r"https://(?!api\.)[a-z0-9-]+\.trycloudflare\.com\b")
 BANNER = "quick tunnel has been created"
 PROBE = "slop-probe.txt"
+REGISTERED_RE = re.compile(r"registered tunnel connection", re.I)
+EDGE_WAIT_S = 30.0          # with outbound port 7844 open, cloudflared registers with the edge in a few seconds
+
+
+def cloudflared_cmd(exe, port: int) -> list[str]:
+    """The quick-tunnel command line. HTTP/2 over TCP by default, so a network that drops UDP still connects
+    (SLOP_TUNNEL_PROTOCOL=quic or auto changes it); either way Cloudflare's edge needs outbound port 7844."""
+    proto = (os.environ.get("SLOP_TUNNEL_PROTOCOL") or "http2").strip().lower()
+    argv = [str(exe), "tunnel", "--no-autoupdate"]
+    if proto in ("http2", "quic"):
+        argv += ["--protocol", proto]
+    return argv + ["--url", f"http://127.0.0.1:{int(port)}"]
+
+
+def edge_wait_s() -> float:
+    try:
+        return float(os.environ.get("SLOP_TUNNEL_EDGE_WAIT") or EDGE_WAIT_S)
+    except ValueError:
+        return EDGE_WAIT_S
+
+
+def origin_answers(url: str, timeout: float = 8.0) -> bool:
+    """True when the public URL reaches OUR server: any answer but Cloudflare's tunnel errors (502, 503, 530)."""
+    import urllib.error
+    import urllib.request
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url.rstrip("/") + "/", headers={"User-Agent": "claudia"}),
+                                    timeout=timeout):
+            return True
+    except urllib.error.HTTPError as e:
+        return e.code not in (502, 503, 530)
+    except (urllib.error.URLError, OSError, ValueError):
+        return False
+
+
+def await_edge(proc, log: Path, wait_s: float | None = None, public_ok=None) -> tuple[bool, str]:
+    """After the URL banner. Cloudflare hands out a trycloudflare.com address BEFORE the tunnel connects, and that
+    address answers 1033 / HTTP 530 until cloudflared has registered a connection with the edge (forever, when the
+    network blocks the edge's port 7844). So the tunnel counts as up only on the "Registered tunnel connection" line,
+    or when public_ok() (the public URL reaching our server) says so at the end. -> (ok, why)."""
+    wait_s = edge_wait_s() if wait_s is None else wait_s
+    t_end = time.monotonic() + wait_s
+    text = ""
+    while True:
+        text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
+        if REGISTERED_RE.search(text):
+            return True, ""
+        if proc.poll() is not None:
+            return False, "cloudflared exited before it connected to Cloudflare. " + blocked_msg(text, wait_s)
+        if time.monotonic() >= t_end:
+            break
+        time.sleep(0.5)
+    if public_ok is not None:
+        try:
+            if public_ok():
+                return True, ""
+        except Exception:  # noqa: BLE001 - a failed last check is a failed tunnel
+            pass
+    return False, blocked_msg(text, wait_s)
+
+
+def blocked_msg(log_text: str, wait_s: float) -> str:
+    said = [ln.strip() for ln in log_text.splitlines() if re.search(r"(?i)7844|edge|dial |timeout|refused", ln)][-2:]
+    return (f"cloudflared printed a trycloudflare.com address but never registered a connection with Cloudflare's edge "
+            f"within {wait_s:.0f} s, so that address does not work (it answers Cloudflare error 1033 / HTTP 530). The "
+            "usual cause: this computer's network blocks outbound port 7844 (UDP and TCP), which quick tunnels need; "
+            "restarting does not help." + (" cloudflared said: " + " | ".join(said)[-300:] if said else ""))
 
 
 def tunnel_url(log: str) -> str | None:
@@ -179,7 +246,7 @@ def start(wait_s: float = 45.0, verify: bool = False, verify_s: float = 20.0) ->
     slog, tlog = rd / "share-server.log", rd / "tunnel.log"
     tlog.write_text("", encoding="utf-8")
     srv = _spawn([sys.executable, "-m", "slop.gen.serve", "--dir", str(sd), "--token", token, "--port", str(port)], slog)
-    tun = _spawn([exe, "tunnel", "--no-autoupdate", "--url", f"http://127.0.0.1:{port}"], tlog)
+    tun = _spawn(cloudflared_cmd(exe, port), tlog)
     state = {"server_pid": srv.pid, "tunnel_pid": tun.pid, "port": port, "token": token, "share_dir": str(sd),
              "url": None, "started": time.strftime("%Y-%m-%dT%H:%M:%S")}
     state_file().write_text(json.dumps(state, indent=1), encoding="utf-8")
@@ -194,6 +261,13 @@ def start(wait_s: float = 45.0, verify: bool = False, verify_s: float = 20.0) ->
         time.sleep(.5)
         if tun.poll() is not None or srv.poll() is not None:
             url = None
+    if url:                                                       # ... and connected to Cloudflare's edge
+        ok, why = await_edge(tun, tlog, public_ok=lambda: origin_answers(url))
+        if not ok:
+            stop()
+            raise SlopError(why + " Sung clips: use the Higgsfield upload instead (media_upload; PUT with the header "
+                            "'If-None-Match: *'; media_confirm), then: slop gen host CLIP --url URL; or route the "
+                            "sung clips to Higgsfield.")
     if not url:
         tail = tlog.read_text(encoding="utf-8", errors="replace")[-600:]
         stop()

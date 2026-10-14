@@ -14,7 +14,7 @@ The box has no GPU. A home GPU runs stems, lyric alignment and plate depth (by h
 Works with NVIDIA (driver 570 or newer) on Windows or Linux, or an Apple Silicon Mac (audio and matte only). AMD: not supported yet.
 
 ## Paired
-1. `slop --json gpu serve` (server and tunnel in the background; the public address answers after 10-30 s).
+1. `slop --json gpu serve` (server and tunnel in the background). It fails when the tunnel never connects (the computer's network blocks port 7844): never retry it and never hand out a line; go to Direct below.
 2. `slop --json gpu pair`. Send only the line for their system (Windows PowerShell, or a Mac or Linux terminal) in its own code block: "Paste this once in a terminal on your GPU computer (about a minute, no admin rights; it installs into .claudia-gpu in your home folder)." The line holds a one-time code: it works once, expires after 24 h, and is never posted anywhere else.
 3. When they say it ran: `slop --json gpu status` (healthy, the GPUs listed); not yet: ask them to say "continue" once it ran.
 4. `slop --json gpu install audio matte` (queued on their computer, about 4.5 GB), then the time (a few minutes) and the profile's turn rule line; on "continue" `slop --json gpu status`: both ready. `slop --json gpu profiles` lists the rest: interp; lipsync only after the person accepts its OpenRAIL++ licence (`slop --json gpu install lipsync --accept-licence`; untested on real hardware; the default stays: cut away).

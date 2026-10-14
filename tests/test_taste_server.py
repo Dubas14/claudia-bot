@@ -153,7 +153,9 @@ def test_tunnel_with_fake_cloudflared(proj, tmp_path):
     b.mkdir(parents=True, exist_ok=True)
     fake = b / "cloudflared"
     fake.write_text("#!/bin/sh\necho 'INF | Your quick Tunnel has been created! Visit it at:'\n"
-                    "echo 'INF |  https://brave-otter-fun-test.trycloudflare.com  |'\nexec sleep 30\n")
+                    "echo 'INF |  https://brave-otter-fun-test.trycloudflare.com  |'\n"
+                    "echo 'INF Registered tunnel connection connIndex=0 event=0 location=ord08 protocol=http2'\n"
+                    "exec sleep 30\n")
     fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
     r = SV.serve(proj, tunnel=True, embed=False)
     try:

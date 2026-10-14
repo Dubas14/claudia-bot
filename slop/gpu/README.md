@@ -17,7 +17,12 @@ on the box's CPU.
 
 ## Paired mode, step by step (bot side)
 
-1. `slop gpu serve` - starts the job server and its quick tunnel in the background. Prints the public URL.
+1. `slop gpu serve` - starts the job server and its quick tunnel in the background. Prints the public URL only once
+   cloudflared has registered a connection with Cloudflare's edge (or the URL answers): Cloudflare hands out a
+   trycloudflare.com address before that, and when the network blocks the edge's outbound port 7844 (UDP and TCP)
+   that address answers error 1033 / HTTP 530 forever. Then `serve` fails with that reason; restarting does not
+   help: use direct mode (below). `slop gpu pair` also refuses until the public URL answers. cloudflared runs with
+   `--protocol http2` (`SLOP_TUNNEL_PROTOCOL=quic` or `auto` to change); both need port 7844.
 2. `slop gpu pair` - prints two lines. Give the user the one for their system:
    - Windows PowerShell: `$env:SLOPGPU_URL='https://…'; $env:SLOPGPU_TOKEN='…'; irm "$env:SLOPGPU_URL/gpu/install.ps1" -Headers @{…} | iex`
    - macOS / Linux: `curl -fsSL -H 'Authorization: Bearer …' 'https://…/gpu/install.sh' | SLOPGPU_URL='…' SLOPGPU_TOKEN='…' bash`

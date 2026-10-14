@@ -60,7 +60,9 @@ def test_tunnel_start_publish_stop(tmp_path, monkeypatch):
     monkeypatch.setenv("SLOP_HOME", str(tmp_path / "home"))
     fake = tmp_path / "cloudflared"
     fake.write_text("#!/bin/sh\necho 'INF Requesting new quick Tunnel on trycloudflare.com...' >&2\nsleep 0.3\n"
-                    "echo 'INF |  https://brave-tiny-words-here.trycloudflare.com   |' >&2\nexec sleep 60\n")
+                    "echo 'INF |  https://brave-tiny-words-here.trycloudflare.com   |' >&2\n"
+                    "echo 'INF Registered tunnel connection connIndex=0 event=0 location=ord08 protocol=http2' >&2\n"
+                    "exec sleep 60\n")
     fake.chmod(0o755)
     monkeypatch.setenv("SLOP_CLOUDFLARED", str(fake))
     st = hosting.start(wait_s=10)

@@ -46,7 +46,8 @@ def start(port: int, log: Path, binary: Path | None = None, timeout: float = 45.
     """start a quick tunnel to 127.0.0.1:port; -> {pid, url}. Raises with the log tail if no URL appears."""
     b = binary or find_cloudflared()
     log.write_bytes(b"")
-    p = spawn_detached([str(b), "tunnel", "--no-autoupdate", "--url", f"http://127.0.0.1:{port}"], log)
+    from ..gen.hosting import await_edge, cloudflared_cmd, origin_answers
+    p = spawn_detached(cloudflared_cmd(b, port), log)
     url = wait_url(log, timeout, proc=p)
     if not url:
         stop_pid(p.pid)
@@ -54,6 +55,10 @@ def start(port: int, log: Path, binary: Path | None = None, timeout: float = 45.
         raise SlopError(f"cloudflared started but printed no trycloudflare.com URL within {timeout:.0f} s. "
                         f"Log tail: {tail.strip()[-300:]}  Re-run `slop taste serve --tunnel`; if it keeps failing, "
                         "the network may block Cloudflare")
+    ok, why = await_edge(p, log, public_ok=lambda: origin_answers(url))
+    if not ok:
+        stop_pid(p.pid)
+        raise SlopError(why)
     return {"pid": p.pid, "url": url}
 
 
