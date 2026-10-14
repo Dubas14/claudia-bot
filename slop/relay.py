@@ -850,8 +850,16 @@ def cmd_read(a) -> dict:
     if prod.get("state") == "failed" and prod.get("log_tail"):
         lines.append("  log tail:\n" + "\n".join("    " + ln for ln in prod["log_tail"].splitlines()))
     lines.append(f"grok_next: {nxt}")
+    try:
+        from .update import reminder
+        upd = reminder()                              # once per new release, one network call a day at most
+    except Exception:  # noqa: BLE001 - a reminder never breaks the relay
+        upd = None
+    if upd:
+        lines.append(f"update: {upd['line']} (add this line once at the end of your reply)")
     return {"items": items, "count": len(items), "new": len(new), "jobs": jobs, "production": prod,
-            "waited_s": round(time.monotonic() - t0, 2), "grok_next": nxt, "text": "\n".join(lines)}
+            "waited_s": round(time.monotonic() - t0, 2), "grok_next": nxt, **({"update": upd} if upd else {}),
+            "text": "\n".join(lines)}
 
 
 def cmd_status(a) -> dict:

@@ -29,6 +29,7 @@ GROUPS = [("Next step, background jobs and downloads", ["next", "job", "fetch"])
           ("Setup checklist (onboarding)", ["onboard"]),
           ("Coding agents (Claude Code, Codex, Muse Code, Gemini CLI)", ["agents"]),
           ("Relay (Grok passes the words; the production does the work)", ["relay"]),
+          ("Updates (one quiet reminder per release; update in one step)", ["update"]),
           ("Home GPU", ["gpu"])]
 SKIP_OPTS = {"-h", "--help", "--json", "--project", "-p"}
 BEGIN = ("<!-- BEGIN MODULE COMMANDS (generated from the real `slop ... --help` tree by tests/gen_cmdref.py; run it "

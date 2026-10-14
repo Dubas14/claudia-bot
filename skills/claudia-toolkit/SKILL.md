@@ -13,7 +13,11 @@ Code /workspace/claudia (git). Runtime /workspace/.claudia. Projects /workspace/
 3. `slop --json doctor`: fix each WARN or FAIL with the line after its `->`. Once per computer: `slop --json job selftest`.
 4. Opus: `slop --json agents status`; missing after an update: `slop --json agents install claude` and `slop --json relay setup` (skill setup-agents). Home GPU: `slop --json gpu status` (skill setup-gpu). What else is missing: `slop --json onboard status` (skill claudia-setup).
 5. /workspace/claudia gone: run the install lines in skill claudia-setup (Reply 2).
-Update only when the person asks: `git -C /workspace/claudia fetch -q --tags origin && git -C /workspace/claudia checkout -q TAG` (TAG = the version they want), then step 2, then `slop --version`. Tell them: re-importing the template brings the matching skills.
+## Update (the person says update, or yes to the reminder)
+1. `slop --json update apply`. Opus is working: it says so; tell the person and try again after Opus finishes. Local changes: send its error.
+2. Do its `next`: read /workspace/claudia/skills/dist/recipe.json and re-apply it to yourself exactly: your profile, every skill byte for byte, the memory entry.
+3. Tell the person in at most 4 lines: "Updated to vX" plus its `notes`. `installing` true: the new version is still installing in the background (the profile's turn rule; `slop --json update check` later).
+"Is there an update?": `slop --json update check`.
 
 ## Reading results
 `slop --json ...` prints one JSON object. `ok` true: report `text` in a line or two and follow `next`. `ok` false: `error` says what to do next; do that, never retry blindly. A usage error also prints `usage`.

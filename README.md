@@ -336,6 +336,14 @@ or after the command name; the documented form is `slop --json --project NAME <c
 | `slop relay stop [--grace GRACE]` | stop the running production turn (waiting messages stay) |
 | `slop relay log [--lines LINES]` | the tail of the relay log (and the last turn's stderr) |
 
+### Updates (one quiet reminder per release; update in one step)
+
+| Command | What it does |
+|---|---|
+| `slop update check [--force]` | this computer's version and the newest release (one network call a day at most) |
+| `slop update apply [--to TO] [--force]` | fetch the releases, check out the newest, repair the install, refresh the production brief; prints what changed and the skills step for Grok |
+| `slop update seen` | the reminder for the newest release was shown (it is not shown again) |
+
 ### Home GPU
 
 | Command | What it does |

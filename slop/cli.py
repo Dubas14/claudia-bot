@@ -28,6 +28,7 @@ MODULES = ["slop.core_cli", "slop.job", "slop.fetch", "slop.audio.cli", "slop.ge
 MODULES.append("slop.agents.cli")  # after slop.gen.cli: it also adds `gen image --provider codex`
 MODULES.append("slop.onboard.cli")  # onboarding checklist: slop onboard status|next|mark|set|apply
 MODULES.append("slop.relay")  # Grok passes words, the production (Claude Code / Codex) works: slop relay ...
+MODULES.append("slop.update")  # a newer release? one quiet reminder per release; slop update apply installs it
 
 
 def _render_human(out: dict) -> str:

@@ -422,9 +422,9 @@ def test_real_probes_offline(capsys, monkeypatch, env):
     for n, f in REAL.items():
         monkeypatch.setattr(probes, n, f)
     monkeypatch.setattr(cli, "MODULES", ALL_MODULES)
-    t0 = time.time()
+    t0 = time.monotonic()
     rc, out = run(capsys, "onboard", "status", "--offline", "--tier", "director")
-    took = time.time() - t0
+    took = time.monotonic() - t0
     assert rc == 0 and out["ok"] and len(out["items"]) == N_ITEMS, out.get("error")
     assert took < 60, f"onboard status took {took:.1f} s"
     by = {i["id"]: i for i in out["items"]}

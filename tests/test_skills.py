@@ -46,7 +46,7 @@ SOURCES = SKILL_FILES + [SKILLS / "profile.md", SKILLS / "memory.md"] + sorted((
 # (`slop agents install` runs as a job in $SLOP_HOME/jobs, so its wait names no project)
 PROJECTLESS = {("new",), ("projects",), ("doctor",), ("gen", "models"), ("gen", "estimate"), ("job", "selftest"),
                ("onboard", "next"), ("onboard", "status"), ("onboard", "mark"), ("onboard", "set"), ("agents",), ("gpu",),
-               ("relay",)}
+               ("relay",), ("update",)}
 PROJECTLESS_IN = {"setup-agents/SKILL.md": {("job", "wait")}}
 FILL = {"FILE": "x.wav", "CLIP": "c01", "SHOT": "s001", "PLATE": "p001", "ID": "j1", "URL": "https://x.test/a",
         "LINK": "https://x.test/a", "TITLE": "t", "NAME": "demo", "BATCH": "b1", "SLUG": "s", "DIR": "d", "RULE": "texture",

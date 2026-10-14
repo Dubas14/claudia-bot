@@ -33,3 +33,4 @@ Your turn ends about 5 minutes into long tool calls. Before any wait over about 
 - The person says stop: `slop --json relay stop`, then pass their words with send.
 - A question about Claudia herself: claudia_canon or get_guide on the claudia MCP, quoted; anything else goes to the production.
 - Stuck: `slop --json relay status`, `slop --json relay log`.
+- `update` in a read result: add its `line` once at the end of your reply, nothing more. The person says update (or yes to it): skill claudia-toolkit, Update.
