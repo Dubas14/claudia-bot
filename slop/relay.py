@@ -450,6 +450,14 @@ def cmd_setup(a) -> dict:
                 "text": f"{title} {what} on this computer, so the relay was not set up.\n  next: {nxt}   (then: "
                         f"slop --json relay setup --engine {eng})"}
     mcp = _mcp_claude() if eng == "claude" else _mcp_codex()
+    also = {}                         # the other engine gets the claudia MCP too: either one may produce later
+    for e in ENGINES:
+        if e == eng:
+            continue
+        if e == "codex":
+            also[e] = _mcp_codex()    # a config file: ready the day Codex is installed
+        elif S.engine_status(e)["installed"]:
+            also[e] = _mcp_claude()
     skill = _install_skill() if (eng == "claude" and not a.no_skill) else {
         "ok": False, "skipped": True, "why": "--no-skill" if a.no_skill else "Codex reads the MCP and AGENTS.md"}
     briefs = _write_briefs(wd, eng, a.force)
@@ -457,7 +465,8 @@ def cmd_setup(a) -> dict:
     model = a.model if a.model is not None else DEFAULT_MODEL[eng]
     with _lock(rd):
         _write_json(rd / "config.json", {"engine": eng, "model": model or None, "set_up": util.iso_now(),
-                                         "work_dir": str(wd), "mcp": mcp, "skill": skill, "briefs": briefs,
+                                         "work_dir": str(wd), "mcp": mcp, "mcp_also": also, "skill": skill,
+                                         "briefs": briefs,
                                          "toolkit": str(toolkit_root())})
     _log(rd, f"setup: engine {eng} model {model or 'default'}; mcp {'ok' if mcp.get('ok') else 'FAILED'}; skill "
              f"{'ok' if skill.get('ok') else 'skipped'}")
@@ -468,7 +477,8 @@ def cmd_setup(a) -> dict:
         + (f"  ({mcp['command']})" if mcp.get("command") else f"  ({mcp.get('file')})")
     lines = [f"relay set up: the production is {title}" + (f" ({model})" if model else "") + f", working in {wd}",
              f"  signed in: {s.get('auth_text') or 'yes'}" + (f", plan {s['plan']}" if s.get("plan") else ""),
-             mcp_line,
+             mcp_line] + [f"  claudia MCP for {E.SPEC[e]['title']} too: "
+                          + ("ready" if m.get("ok") else f"FAILED ({m.get('error')})") for e, m in also.items()] + [
              "  Claudia skill: " + (f"installed in {skill['dir']} ({', '.join(skill['skills']) or 'files'})"
                                     if skill.get("ok") else f"skipped: {skill.get('why')}")]
     lines += [f"  brief: {b['file']}" + ("" if b["written"] else f" NOT written: {b['why']}") for b in briefs]
@@ -480,6 +490,7 @@ def cmd_setup(a) -> dict:
         nxt, err = f"slop --json relay setup --engine {eng} --force", f"brief not written: {mine['why']}"
     lines.append(f"next: {nxt}")
     return {"ok": ok, "engine": eng, "model": model, "work_dir": str(wd), "relay_dir": str(rd), "mcp": mcp,
+            "mcp_also": also,
             "skill": skill, "briefs": briefs, "next": nxt, **({"error": err} if err else {}), "text": "\n".join(lines)}
 
 

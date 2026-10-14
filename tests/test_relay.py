@@ -89,6 +89,12 @@ def test_setup_registers_the_mcp_installs_the_skill_and_writes_the_brief(tmp_pat
     assert out["skill"]["skills"] == ["claudia"]
     cfg = json.loads((env["rd"] / "config.json").read_text())
     assert cfg["engine"] == "claude" and cfg["model"] == "opus"
+    codex = (env["home"] / ".codex" / "config.toml").read_text()     # Codex gets the claudia MCP too
+    assert "[mcp_servers.claudia]" in codex and 'url = "https://claudia.gallery/mcp"' in codex
+    assert out["mcp_also"]["codex"]["ok"]
+    for name in ("CLAUDE.md", "AGENTS.md"):                         # both engines know the home GPU
+        text = (env["wd"] / name).read_text()
+        assert "slop gpu status" in text and "--gpu auto" in text and "gpu pair --refresh" in text
     rc, out = K.run("relay", "setup")                      # idempotent: no second registration
     assert rc == 0 and out["mcp"]["already"] is True
     assert len([c for c in K.calls(env["state"], "claude") if c["argv"][:2] == ["mcp", "add"]]) == 1
@@ -119,6 +125,8 @@ def test_codex_setup_writes_its_config_once(tmp_path, monkeypatch):
     text = cfg.read_text()
     assert text.count("[mcp_servers.claudia]") == 1 and 'url = "https://claudia.gallery/mcp"' in text
     assert 'model = "gpt-6"' in text and "[mcp_servers.other]" in text
+    adds = [c for c in K.calls(env["state"], "claude") if c["argv"][:2] == ["mcp", "add"]]
+    assert len(adds) == 1 and out["mcp_also"]["claude"]["ok"], "Claude Code gets the claudia MCP too, once"
 
 
 # ------------------------------------------------------------------------------------------------------- the loop
