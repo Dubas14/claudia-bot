@@ -207,10 +207,6 @@ def cmd_apply(a) -> dict:
     dirty = _git("status", "--porcelain", "--untracked-files=no")
     if dirty.returncode != 0:
         raise SlopError(f"{root()} is not a git checkout of the toolkit: " + dirty.stderr.strip()[-200:])
-    if dirty.stdout.strip():
-        raise SlopError(f"the toolkit at {root()} has local changes, so it was not updated: "
-                        + ", ".join(ln[3:] for ln in dirty.stdout.splitlines()[:5])
-                        + ". Keep them elsewhere, then `git -C " + str(root()) + " checkout -- .` and update again")
     before = current()
     f = _git("fetch", "-q", "--tags", "origin", timeout=180)
     if f.returncode != 0:
@@ -223,8 +219,19 @@ def cmd_apply(a) -> dict:
     if before and target == before:
         _save(latest=show(max(tags)), notified=show(max(tags)))
         return {"updated": False, "current": show(before), "text": f"already on v{show(before)}: nothing to update"}
+    stashed = None
+    if dirty.stdout.strip():                 # a local fix (e.g. one the bot made) is kept in git's stash, not lost
+        files = [ln[3:] for ln in dirty.stdout.splitlines()]
+        s = _git("-c", "user.name=Claudia bot", "-c", "user.email=bot@claudia.invalid", "stash", "push", "-m",
+                 f"claudia update to v{show(target)}: local changes set aside {util.iso_now()}")
+        if s.returncode != 0:
+            raise SlopError(f"the toolkit at {root()} has local changes ({', '.join(files[:5])}) and they could not "
+                            "be set aside, so it was not updated: " + (s.stderr or s.stdout).strip()[-200:])
+        stashed = files
     co = _git("checkout", "-q", "v" + show(target))
     if co.returncode != 0:
+        if stashed:
+            _git("stash", "pop")             # back as they were
         raise SlopError(f"could not check out v{show(target)}: " + co.stderr.strip()[-300:])
     try:
         notes = notes_since((root() / "CHANGELOG.md").read_text(encoding="utf-8"), before)
@@ -238,6 +245,9 @@ def cmd_apply(a) -> dict:
     nxt = (f"re-apply {recipe} to yourself exactly: your profile, every skill byte for byte, the memory entry; then tell "
            f"the person 'Updated to v{show(target)}' and these notes")
     lines = [f"updated: v{show(before)} -> v{show(target)}"]
+    if stashed:
+        lines.append(f"local edits set aside ({', '.join(stashed[:5])}); the release has its own version of them. "
+                     f"They are kept: `git -C {root()} stash list`")
     lines += ["what changed:"] + [f"  {n}" for n in notes] if notes else []
     if install_log:
         lines.append(f"installing what the new version needs in the background (a few minutes; log {install_log}); "
@@ -245,7 +255,8 @@ def cmd_apply(a) -> dict:
     if brief.get("ok") is False:
         lines.append("the production brief was not refreshed: run `slop relay setup` once Opus is signed in")
     lines.append(f"next: {nxt}")
-    return {"updated": True, "from": show(before), "to": show(target), "notes": notes, "installing": bool(install_log),
+    return {"updated": True, "from": show(before), "to": show(target), "notes": notes, "stashed": stashed,
+            "installing": bool(install_log),
             "brief": brief, "recipe": str(recipe), "next": nxt, "text": "\n".join(lines)}
 
 

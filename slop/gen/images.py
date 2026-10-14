@@ -458,7 +458,7 @@ def plan_jobs(pdir: Path, jobs: list[dict], *, only: list[str] | None = None, mi
               n_refs: int = 0, refs: list[str] | None = None) -> list[dict]:
     """n_refs: kept for old callers (an estimate with that many references when the jobs carry none)."""
     proj = load_project(pdir)
-    pmodel = (proj.get("models") or {}).get("image")
+    pmodel = reg.resolve(proj, "image", DEFAULT_MODEL, "image")      # the newest of its family unless pinned
     if only:
         known = {j["plate"] for j in jobs}
         bad = [o for o in only if o not in known]

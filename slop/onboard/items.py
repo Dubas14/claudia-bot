@@ -107,21 +107,21 @@ CATALOG = [
     dict(id="suno", group="music", title="Suno plan", kind="plan", need="occ",
          cost="your Suno plan; Free plan songs are for non-commercial use only",
          unlocks="Songs from your own Suno account (the bot writes paste-ready song packs)"),
-    dict(id="suno-signin", group="music", title="Suno signed in (browser assist)", kind="record", need="ooo",
-         cost="free; Suno's terms forbid automation, so this is opt-in and you confirm every Create",
-         unlocks="Browser assist for Suno: the bot fills the forms in its browser, you confirm"),
+    dict(id="suno-signin", group="music", title="Suno signed in (Grok's browser)", kind="record", need="ooo",
+         cost="free; Suno's terms limit automated use (a one-line heads-up at sign-in)",
+         unlocks="Grok makes Opus's songs on suno.com in its browser and saves both takes for Opus"),
     dict(id="lyria", group="music", title="Lyria songs (fallback)", kind="check", need="coo",
          cost="about $0.08 a full song, $0.04 a 30 s clip (OpenRouter)",
          unlocks="Songs without Suno: Lyria through OpenRouter"),
     dict(id="midjourney", group="stills", title="Midjourney plan", kind="plan", need="occ",
          cost="your Midjourney subscription",
          unlocks="Midjourney stills: the bot writes the prompt book, you paste, it ingests"),
-    dict(id="mj-profile", group="stills", title="Midjourney profile code", kind="plan", need="ooo",
-         cost="free; kept in your user settings, never shipped",
-         unlocks="Your personal Midjourney style (--profile) in every plate prompt"),
-    dict(id="mj-signin", group="stills", title="Midjourney signed in (browser assist)", kind="record", need="ooo",
-         cost="free; Midjourney's terms forbid automation, so this is opt-in and you confirm every Submit",
-         unlocks="Browser assist for Midjourney: the bot fills prompts in its browser, you confirm"),
+    dict(id="mj-profile", group="stills", title="Midjourney personalization", kind="plan", need="ooo",
+         cost="free; no code needed",
+         unlocks="Your own Midjourney style, switched on with the P button when you want it (Opus asks per project)"),
+    dict(id="mj-signin", group="stills", title="Midjourney signed in (Grok's browser)", kind="record", need="ooo",
+         cost="free; Midjourney's terms limit automated use (a one-line heads-up at sign-in)",
+         unlocks="Grok runs Opus's Midjourney prompts in its browser and saves every image for Opus"),
     dict(id="api-images", group="stills", title="API image models", kind="check", need="ccc",
          cost="from about $0.004 an image (gpt-image-2, low quality)",
          unlocks="Stills from API image models (no Midjourney needed)"),
@@ -731,10 +731,10 @@ def _signin(ctx: Ctx, iid: str, site: str, plan_item: str, plan: str | None, pai
         return {"raw": "done", "why": f"signed in on the bot's browser (recorded {_date(m)}){_note(m)}; if a page asks "
                                      "to sign in again, the user signs in again themselves"}
     return {"raw": "todo", "next_skill": skill("setup-accounts"), "record_cmd": f"slop onboard mark {iid} --done",
-            "why": "optional browser assist (default: human in the loop, the user submits in their own browser)",
-            "do": f"only if the user opts in after hearing that {site}'s terms forbid automation: open the site in the "
-                  f"bot's browser, the user signs in THEMSELVES (never type a password), they confirm every "
-                  f"{button}. When you see them signed in, run the record command."}
+            "why": f"Grok runs Opus's {site} jobs in its own browser; the user signs in there once",
+            "do": f"open {site} in your browser with a one-line heads-up that its terms limit automated use; the user "
+                  f"signs in THEMSELVES (never type a password). When you see them signed in, run the record "
+                  f"command."}
 
 
 def _suno_signin(ctx: Ctx) -> dict:
@@ -762,8 +762,6 @@ def _mj_gaps(ctx: Ctx) -> tuple[dict | None, list[str]]:
     gaps = []
     if sets.get("mj_plan") in PAID_MJ and (p.get("mj_plan") or "standard") != sets["mj_plan"]:
         gaps.append("plan")
-    if sets.get("mj_profile") and not p.get("mj_profile_set"):
-        gaps.append("profile")
     return p, gaps
 
 
@@ -790,24 +788,17 @@ def _mj_profile(ctx: Ctx) -> dict:
     plan, code = sets.get("mj_plan"), sets.get("mj_profile")
     need = "c" if plan in PAID_MJ and ctx.tier != "quick" else "o"
     if code:
-        r = {"raw": "done", "need": need, "data": {"code": st.mask(code)},
-             "why": f"recorded in your user settings ({st.mask(code)}); never shipped"}
-        p, gaps = _mj_gaps(ctx)
-        if "profile" in gaps:
-            r.update(raw="todo", next_cmd=_pcmd(p["name"], "onboard apply"),
-                     why=r["why"] + f"; project {p['name']} does not use it yet",
-                     do="copies the recorded profile code (and plan) into that project's project.json")
-        return r
+        return {"raw": "done", "need": need, "data": {"code": st.mask(code)},
+                "why": f"recorded in your user settings ({st.mask(code)}); never shipped. Prompts never carry it: "
+                       "personalization is the P button"}
     if plan == "none":
         return {"raw": "skipped", "need": need, "why": "no Midjourney"}
     if plan not in PAID_MJ:
         return {"raw": "blocked", "need": need, "blocked_by": ["midjourney"],
                 "why": "record the Midjourney plan first (midjourney)"}
-    return {"raw": "todo", "need": need, "next_skill": skill("setup-accounts"), "why": "no profile code recorded",
-            "ask": "What is your Midjourney profile code (the text after --profile in your Midjourney personalization "
-                   "settings)? Say 'none' if you do not use one.",
-            "answers": {"none": "slop onboard mark mj-profile --skip"},
-            "do": "with a code: slop onboard set mj-profile CODE (CODE = their code; it stays in their user settings)"}
+    return {"raw": "skipped", "need": "o",
+            "why": "no code needed: Grok switches your personalization on with the P button, and Opus asks per project "
+                   "whether to use it (make a profile any time on midjourney.com's Personalize page)"}
 
 
 def _mj_signin(ctx: Ctx) -> dict:
@@ -1023,9 +1014,9 @@ def _gpu_do(cmd: str, why: str) -> str:
 
 
 def gpu_enabled() -> bool:
-    """The home-GPU link is parked until the relay ships (the bot's computer cannot open a quick tunnel): SLOP_GPU=1
-    turns the checklist item back on."""
-    return os.environ.get("SLOP_GPU", "0").strip() == "1"
+    """The home-GPU link is parked until the relay ships (the bot's computer cannot open a quick tunnel):
+    SLOP_GPU_LINK=1 turns the checklist item back on. (SLOP_GPU is the analysis mode: auto, off or require.)"""
+    return os.environ.get("SLOP_GPU_LINK", "0").strip() == "1"
 
 
 def _gpu(ctx: Ctx) -> dict:

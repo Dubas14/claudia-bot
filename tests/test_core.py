@@ -92,7 +92,7 @@ def test_new_creates_contract_project(capsys, env):
     assert "pin" in proj["lead"]["note"] and "face image" in proj["lead"]["note"]
     assert proj["mj"]["profile"] == "" and "--profile" not in proj["mj"]["params"]
     assert proj["look"]["accent"] == "#D97757" and set(proj["look"]["fonts"]) == {"lyric", "micro", "display"}
-    assert set(proj["models"]) == {"image", "video", "video_cheap", "edit"}
+    assert set(proj["models"]) == {"image", "video", "video_cheap", "edit", "pin"} and proj["models"]["pin"] is False
     assert proj["budget"] == core_cli.TIER_BUDGETS["quick"]
     assert proj["gates"] == {"board_approved": False, "prompts_approved": False, "v1_approved": False}
     for d in core_cli.DIRS:

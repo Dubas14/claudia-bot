@@ -62,6 +62,7 @@ idle, queued (messages wait but nothing runs), failed (with the error and the lo
 | File | What |
 |---|---|
 | config.json | engine, model, what setup did |
+| effort.json | the effort level per engine (`slop relay effort`) and any level an engine turned down |
 | inbox.jsonl | every message to the production: `{id, ts, from, text}` |
 | decisions.md | every director message, dated, append-only |
 | outbox.jsonl | every say, ask and job: `{id, kind, text, default, files, turn}`; job J-0003 is outbox item 3 |
@@ -85,6 +86,11 @@ ages from the monotonic clock, never the wall clock: it can step (a WSL clock wa
   "failed", and `read` gives the reason and the log tail. After the fix, `slop --json relay send 'continue' --from
   grok` runs them again; the prompt says the last turn failed and may have done part of the work.
 - **The saved session is gone** (a wiped ~/.claude). The turn is retried once in a new session.
+- **The engine turns the effort level down** (an older CLI without `--effort`, or a model without that level).
+  The turn runs again at the engine's own default, and that level is not passed again until a new one is set
+  (`slop relay effort` shows why). Each turn passes `--effort LEVEL` to Claude Code and
+  `-c model_reasoning_effort="LEVEL"` to Codex: xhigh unless the person picked another level (Claude Code's
+  levels come from its own `--help`), `auto` passes none; `$SLOP_CLAUDE_EFFORT` / `$SLOP_CODEX_EFFORT` override.
 - **The production posts nothing.** Its last words are posted for it, marked as its own words, so the person
   still hears something.
 - **The supervisor dies** (killed, out of memory, a restart). `read` reports "failed"; the next `send` starts a new
@@ -100,7 +106,7 @@ ages from the monotonic clock, never the wall clock: it can step (a WSL clock wa
 
 | Who | Command |
 |---|---|
-| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `status`, `stop`, `log` |
+| Grok | `slop --json relay setup`, `send '<words>' [--from grok]`, `read --wait 200`, `done JOB --file PATH`, `fail JOB --reason '<words>' [--declined]`, `effort [LEVEL] [--engine codex]`, `status`, `stop`, `log` |
 | Production | `slop relay say`, `ask`, `job`, `inbox` |
 
 The skill for Grok's side is skills/claudia-relay/SKILL.md.

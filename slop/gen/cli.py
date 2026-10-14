@@ -135,7 +135,8 @@ def cmd_image(a) -> dict:
     if a.only or a.missing:
         raise SlopError("--only / --missing pick jobs from a jobs file: add --jobs (default plates/jobs.json)")
     prompt = _read_text(a.prompt, _in(pdir, a.prompt_file), "prompt")
-    model = a.model or (load_project(pdir).get("models") or {}).get("image") or "openai/gpt-image-2"
+    from . import models as M, images as IM
+    model = a.model or M.resolve(load_project(pdir), "image", IM.DEFAULT_MODEL, "image")
     if not (a.plate or a.out):
         raise SlopError("say where the image goes: --plate NAME (plates/cands/NAME/<k>.png) or --out FILE")
     out_dir = (pdir / "plates" / "cands" / a.plate) if a.plate else None
@@ -153,7 +154,8 @@ def cmd_edit(a) -> dict:
     pdir = resolve_project(a.project)
     instr = imgedit.compose(a.instruction, a.change, a.keep)
     proj = load_project(pdir)
-    model = a.model or (proj.get("models") or {}).get("edit") or imgedit.DEFAULT_MODEL
+    from . import models as M
+    model = a.model or M.resolve(proj, "edit", imgedit.DEFAULT_MODEL, "image")
     note = None
     if a.medium:
         medium = imgedit.norm_medium(a.medium)

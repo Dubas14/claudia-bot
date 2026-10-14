@@ -18,7 +18,7 @@ tier uses the image-edit model for fixes (§12).
 |---|---|
 | `board/shots.json` | input: each shot's `plate` key, `framing`, `lead_on_screen`, `type[].placement`, `mj_prompt` |
 | `project.json` → `lead.canon`, `lead.far`, `lead.possessive` | the pinned identity text (§5) |
-| `project.json` → `mj.params`, `mj.profile` | `--ar 16:9 --v 8.2 --raw --hd` and the owner's own profile code |
+| `project.json` → `mj.params`, `mj.raw`, `mj.hd`, `mj.personalize` | `--ar 16:9`; Raw (default on), HD (default off) and personalization (default on, the P button): the owner's choices, asked once per project |
 | `plates/prompts.md` | the prompt book: every batch, every prompt, in the order it is pasted |
 | `plates/cands/<plate>/<k>.jpg` | the 4 candidates of a job, `k` = 1..4 (grid position) |
 | `plates/picks.json` | `{plate: {file, cand_k, shot_ids[]}}` — the chosen candidate per plate |
@@ -41,8 +41,9 @@ tier uses the image-edit model for fixes (§12).
 6. **No face image references for the lead.** They import sheet layouts or give "a close-up-sized head on a distant
    figure". `--oref` does not exist in V8.x (it was replaced by the Edit Model). Image references only where the owner
    explicitly asks (§5.6).
-7. **Parameters on every line:** `--ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>`. **Never a bare `--p`.** The
-   profile code is the owner's alone: it is never published (posts, making-ofs, shared prompt books).
+7. **Parameters on every line:** `--ar 16:9`, plus `--raw` and `--hd` as the owner chose. **Never `--v`:**
+   Midjourney's default is its newest model (`mj.version` pins one only when the owner asks). **Never a profile code:**
+   personalization goes on with the P button (`mj.personalize`); a profile is the owner's alone and never published.
 8. **No style references (srefs) by default.** The profile carries the look.
 9. **All type is drawn by the engine.** Every prompt ends `no text, no letters, no logos`; signs, tags and screens are
    "blank".
@@ -90,46 +91,43 @@ candidates, pick, shots) · `slop gen edit` (fixes, §12) · `slop gate prompts 
 
 ### 2.2 The personalization profile (the look)
 
-anabology's plates were made with their own **V8 personal profile**. The owner makes theirs; never ship or reuse
-anyone else's code.
+anabology's plates were made with their own personal profile. The owner makes theirs; never ship or reuse anyone
+else's.
 
-1. On midjourney.com open **Personalize**. Click **Global V7 Profile** and pick images from the grid until the progress
-   bar fills and the profile **unlocks**. (V8 has no global profile; the Global V7 profile must be unlocked first.)
-2. In **Settings**, set the default version to **8.2**. New profiles are built for the default version.
-3. Back in Personalize, click **New Profile** and keep picking images. More picks = a profile that knows the owner's
-   taste better. Aim for several hundred.
-4. Click the profile's **use** icon. It copies `--p <profile ID>`.
-5. Submit one test prompt with that ID. MJ converts the ID into a **code** (`--p <code>`), visible on the job.
-   An ID always means "the latest version of the profile"; a **code pins one version**, so the look stays stable for the
-   whole project.
-6. Record the code in `project.json` → `mj.profile`. Every pasted line carries `--p <that code>`.
-7. In the Imagine bar settings: turn the **Personalization toggle OFF** (it would add the default profiles to every
-   prompt; whether it stacks with an explicit code is untested, so off is the safe setting). Version 8.2, Raw on, HD on.
+1. On midjourney.com open **Personalize** and follow the page: pick images until a profile unlocks. More picks = a
+   profile that knows the owner's taste better; aim for several hundred. The picking is the owner's taste (Grok can open
+   the page; it never picks).
+2. Make it one of the account's **default** profiles there: the **P** button in the Imagine bar applies the default
+   profiles to every prompt.
+3. Whether to use it is the owner's choice, asked once per project (default on): `project set mj.personalize
+   true|false`. Grok presses P for each Midjourney job when it is on. A profile code never goes into a prompt.
 
-**Why "never a bare `--p`":** `--p` with no code applies the *default* profiles, which for anabology was the Global
-V7 profile. A whole batch came back in the wrong look and was rejected ("these aren't the right profile, I need v8.2
-personalized"). `--p` and `--profile` are the same parameter; both need the code.
+**Check the defaults before a big batch:** P applies whatever profiles are the account's defaults. For anabology an old
+global profile was still a default once, and a whole batch came back in the wrong look and was rejected ("these aren't
+the right profile, I need v8.2 personalized").
 
-If the owner has no profile yet, the bot can still write the batches; plates made without a profile look generic. Say so
-once, and offer to wait.
+If the owner has no profile yet, plates come out in Midjourney's generic look. Say so once, and offer to wait.
 
 ---
 
 ## 3. Parameters
 
-Default (`project.json` → `mj.params` + `mj.profile`):
+Default (`project.json` → `mj.params`, then the owner's switches `mj.raw` and `mj.hd`):
 
 ```
---ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>
+--ar 16:9 --raw
 ```
+
+The films used V8.2 with `--raw --hd`; that is a record, not a setting. Midjourney's default is its newest model, and
+sizes, GPU costs and parameters change with each version: check Midjourney's own docs when a number matters.
 
 | Parameter | Use | Notes |
 |---|---|---|
-| `--ar 16:9` | every plate | `--hd` 16:9 output is **2944×1648**. A 16:9 job that comes back **1456×816 ran in SD** (HD off). |
-| `--v 8.2` | every plate | V8.2 is the default since 2026-07-24; V8.0 is retired. |
-| `--raw` | every plate | turns off MJ's default styling so the profile and the prompt carry the look; no surcharge |
-| `--hd` | every plate | native 2K; 1.3 GPU-min per job (not 4×) |
-| `--p <code>` | every plate | the pinned profile code; never bare |
+| `--ar 16:9` | every plate | under V8.2 with `--hd`, 16:9 came back 2944×1648 (1456×816 without HD) |
+| no `--v` | every plate | Midjourney's default is its newest model; `mj.version` only when the owner asks for one |
+| `--raw` | when `mj.raw` is on (the default) | turns off MJ's default styling so the profile and the prompt carry the look |
+| `--hd` | when `mj.hd` is on (default off) | higher native resolution where the version offers it; more GPU time per job |
+| no `--p` / `--profile` | every plate | personalization is the P button (`mj.personalize`, default on) |
 | `--ar 4:5` | rare fashion close-ups / detail inserts | 1968×2464 with HD |
 | `--niji` | only for an anime-style insert | niji jobs carry **no personal profile**; output 1456×816 |
 | `--iw <0–3>` | only with an allowed image reference (§5.6) | default 1 |
@@ -300,7 +298,7 @@ no text, no letters, no logos
 <chapter style tail, verbatim>, no text, no letters, no logos
 ```
 
-Then the pasted line adds the parameters: `<prompt> --ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>`.
+Then the pasted line adds the parameters: `<prompt> --ar 16:9 --raw` (plus `--hd` when the owner turned HD on).
 
 Worked example (EV's hook close-up, verbatim; its "young" is retired: new prompts use today's identity text, §5.1):
 
@@ -519,12 +517,12 @@ owner's notes that caused a batch verbatim with `slop decide "<the owner's words
 ```json
 {"batch": "myvid-02-core", "created": "2026-10-02", "note": "my-song plates", "plan": "standard",
  "jobs": [{"job": "hall-ms", "plate": "hall-ms", "kind": "plate", "prompt": "…",
-           "params": "--ar 16:9 --v 8.2 --raw --hd --profile <YOUR_PROFILE_CODE>", "srefs": [], "irefs": [],
+           "params": "--ar 16:9 --raw", "srefs": [], "irefs": [],
            "expect_images": 4, "shots": ["s011", "s013"], "lead": true}]}
 ```
 
-The profile code in `params` comes only from `project.json` → `mj.profile` (the owner's own code). `--profile` and
-`--p` are the same parameter.
+`params` never carries a version or a profile code: Midjourney's default is its newest model, and personalization is
+the P button (`project.json` → `mj.personalize`).
 
 ### 7.3 Lint checklist (read every prompt before the owner sees the book)
 
@@ -548,7 +546,7 @@ against the whole table yourself** (the bot does this by reading; it is not a co
 | closer | the prompt does not end with `no text, no letters, no logos` |
 | sung mouth | a sung plate lacks `her mouth fully visible, nothing in front of her mouth`, or names a microphone (a canon headset at her cheek aside), a hand at the lips or anything over the mouth |
 | length | > 800 characters |
-| params | a bare `--p`, a missing profile code, `--oref`, or an unexpected `--sref` |
+| params | a `--v` the owner did not ask for, a `--p` or profile code, `--oref`, or an unexpected `--sref` |
 | words | any word from the project's banned list; a real person's name when the project has not opted in |
 | braces | a `{` or `}` inside a prompt (breaks permutations) |
 
@@ -561,8 +559,8 @@ prepares everything around it.
 
 ### 8.1 What the owner does first (once per batch)
 
-1. midjourney.com → Settings: version **8.2**, Raw on, HD on, **Personalization toggle off**, **Fast** mode (needed for
-   permutations).
+1. midjourney.com → Settings: leave the version on Midjourney's default (its newest); Raw and HD come in each line's
+   parameters; **P** (personalization) on only when `mj.personalize` is on; **Fast** mode (needed for permutations).
 2. Create a folder named exactly like the batch (`myvid-02-core`) and **open it**: the Imagine bar shows "Generating in
    myvid-02-core", so every image lands in that folder.
 
@@ -572,7 +570,7 @@ The lines are in `plates/mj/<batch>.lines.txt`. The bot sends one code block per
 line:
 
 ```
-<prompt for hall-ms> --ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>
+<prompt for hall-ms> --ar 16:9 --raw
 ```
 
 Never put a job number in front of the line (it would be pasted into the prompt). Paste one line, press Enter, next.
@@ -587,7 +585,7 @@ The plate prompts are full of commas, and an unescaped comma inside the braces w
 So **every comma inside a prompt is written `\,`**, and plain `, ` separates the prompts:
 
 ```
-{close-up of a woman in her late twenties\, a glossy black bob\, sitting in a car at night\, no text\, no letters\, no logos, wide shot of an empty freeway at dawn\, fog\, no text\, no letters\, no logos} --ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>
+{close-up of a woman in her late twenties\, a glossy black bob\, sitting in a car at night\, no text\, no letters\, no logos, wide shot of an empty freeway at dawn\, fog\, no text\, no letters\, no logos} --ar 16:9 --raw
 ```
 
 That paste is **2 jobs**. `slop plates book` builds every chunk this way and writes it to
@@ -789,9 +787,9 @@ Details of the edit API and the other edit models: `51-plates-api.md` §6.
 | The lead's ethnicity drifts | no ethnicity/skin words, or canon not verbatim | paste `lead.canon` verbatim; re-roll flagged jobs |
 | A full-length prompt returns face crops | full canon on a far shot | camera-first wording + `lead.far` + head-to-toe size cue (§5.3) |
 | An oversized close-up head on a distant figure / floating giant heads | face image references | text identity only (§5.6) |
-| Whole batch in the wrong look | bare `--p` (default Global V7) or the toggle on | explicit `--p <code>`, toggle off; re-run |
+| Whole batch in the wrong look | P on with the wrong default profiles, or P on when the owner chose off | fix the defaults on the Personalize page (or P off); re-run |
 | "Version 8.2 doesn't support --oref" | `--oref` | remove it; V8 uses the Edit Model |
-| 1456×816 instead of 2944×1648 | HD off | re-run with `--hd`, or accept for a minor insert |
+| Smaller than expected | HD off | `project set mj.hd true` if the owner wants HD, or accept for a minor insert |
 | Permutation asks for the wrong number of prompts | an unescaped comma or brace | click No; rebuild the chunk with `\,` |
 | Permutations refused | Relax mode or over the plan limit | Fast mode; chunks of ≤ 4/10/40 |
 | Jobs missing after download | moderation block, skipped paste, queue overflow | ask for a screenshot of any notice; reword plainly; send a "resume" sheet of only the missing jobs |

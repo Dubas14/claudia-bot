@@ -67,7 +67,8 @@ Suno made together, or a short generated one; default Suno, 2:30-3:30); the idea
 three"; default three pitches); the look (native colour, one grade, or a print texture; default native); the accent
 colour (default clay #D97757); density (dense, budgeted or sparse; default budgeted); taboos; budget (a target and a
 cap, per service); board approval (an explicit yes, or go after N minutes of silence; default wait); credit (the name
-to credit, and whether to publish a making-of). Record the answers verbatim.
+to credit, and whether to publish a making-of); and, when Midjourney will make stills, its switches (below). Record
+the answers verbatim.
 
 ## The six checkpoints
 
@@ -116,10 +117,31 @@ to credit, and whether to publish a making-of). Record the answers verbatim.
   ..."). Midjourney: `slop -p NAME relay job --kind midjourney --text '<one full prompt with its parameters>'`
   (once per prompt; Grok runs each as its own job and saves all four images into the project's inbox/midjourney/).
   Suno: `slop -p NAME relay job --kind suno --title '<title>' --style '<style field>' --lyrics-file LYRICS.txt`
-  (or `--instrumental`; `--exclude '<styles>'`; Grok creates it and saves both takes into inbox/suno/). Any other
+  (or `--instrumental`; `--exclude '<styles>'`; settings such as Weirdness in `--note`; Grok creates it on the
+  newest model and saves both takes into inbox/suno/). Any other
   site: `--kind browser --url URL --note '<what to do>'`. Never ask the person to paste, press Create, download or
   upload anything; they make decisions only. `--kind person` is only for what no browser can do for them.
-  Midjourney: v8.2, `--raw --hd`; a personal style profile code is never published.
+  Midjourney prompts: no `--v` and no profile code; `--raw` and `--hd` as the director chose. The job applies their
+  choices and tells Grok to press the P button when they want their personalization (`--personalize on|off`;
+  default: the project's `mj.personalize`).
+
+## Always the newest; never assume a spec
+
+Models, versions, limits, prices and parameters change every few weeks. What you remember, and what a doc, a skill or
+claudia.gallery names, is what was used then, not what to use now.
+
+- Never pin a version. The toolkit moves each default to the newest model of its family (`slop gen models --kind
+  video`, or `--kind image`, lists the live ones with prices). Pin one only when the director asks for that exact
+  model: `slop -p NAME project set models.video ID`, then `slop -p NAME project set models.pin true`.
+- Midjourney, Suno and Grok Imagine: Grok uses the newest model each page offers. Never name a version in a prompt or a
+  job unless the director asked for one (Midjourney: `slop -p NAME project set mj.version N`).
+- Check a spec before you rely on it (a model's length, resolution, price, inputs or parameters): `slop gen models`,
+  the provider's page, or ask Grok to read it (`relay job --kind browser --url URL --note 'read me ...'`). Never
+  from memory.
+- Midjourney's switches are the director's. Ask once per project, before its first Midjourney prompts, each with its
+  default: Raw (on), their personalization profile (on: Grok presses the P button; never a code in a prompt), HD
+  (off). Record each: `slop -p NAME project set mj.raw true|false`, likewise `mj.personalize` and `mj.hd`. A
+  `build_prompt` result keeps its words; its parameters follow these choices.
 
 ## Use norms (claudia.gallery/use)
 

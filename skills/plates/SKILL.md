@@ -9,11 +9,11 @@ Midjourney (Studio, Director): read docs/50-plates-midjourney.md §1 first. Grok
 
 ## Lead first (G3)
 1. Write the canon with the owner (§5.1, §5.3): framing first, visible garments, ethnicity, age, skin; plus a short far version for wide shots. `slop --json -p NAME lead --canon '<canon>' --far '<far version>'`.
-2. Their own profile code (skill setup-accounts records it once) goes only into project.json, never into anything public: `slop --json -p NAME onboard apply` (or `slop --json -p NAME project set mj.profile CODE`).
+2. Midjourney's switches are the owner's, asked once per project (defaults: Raw on, personalization on, HD off): `slop --json -p NAME project set mj.raw true|false` (likewise mj.personalize, mj.hd). Never a `--v` or a profile code in a prompt: Midjourney's default is its newest model, and Grok presses the P button.
 3. 4 test plates of the lead (CU, MCU, FS, WS). Before a board exists: write the 4 prompts yourself (§4.9 template, the canon verbatim, the far version for FS and WS) and send them as Sheet A lines, one code block each. Ingest each download: `slop --json -p NAME plates ingest FILE --plate lead-cu` (then lead-mcu, lead-fs, lead-ws), then `slop --json -p NAME plates sheet --plates lead-cu,lead-mcu,lead-fs,lead-ws`. Once a board exists use `slop --json -p NAME plates book --batch NAME-00-lead --only K1,K2,K3,K4` instead (`slop --json -p NAME plates status` lists the keys). "Is this the lead? Flag any wrong face." Record: `slop --json -p NAME decide '<their words>' --by owner`.
 
 ## The book (§7, §8)
-4. Once (§8.1): the owner sets v8.2, Raw, HD, Personalization off, Fast mode, and opens a folder named like the batch.
+4. Once (§8.1): Grok leaves the version on Midjourney's default (its newest), sets Fast mode and opens a folder named like the batch; Raw and HD are in the params, personalization is the P button.
 5. `slop --json -p NAME plates book --batch NAME-01-core --plan standard` (their plan: basic, standard, pro or mega). Read every prompt against the lint list (§7.3). The project's first permutation paste is a 3-prompt test (§8.3): `slop --json -p NAME plates book --batch NAME-01-test --only K1,K2,K3`; the owner checks the job count and that no job shows a "Long Prompt" badge.
 6. Send plates/prompts.md and the paste blocks, one code block each (Sheet A lines or Sheet B permutations, §8.2 and §8.3): "Midjourney must ask: run N prompts? Click Yes only if the number is N." The book is G5 when it spends money (an API batch).
 

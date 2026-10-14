@@ -13,7 +13,7 @@ One multi-select widget "Which do you have, or are willing to get?": Claude Max 
 An account they will get but do not have yet: at its step below, first send its sign-up page (claude.ai, chatgpt.com, grok.com, openrouter.ai, higgsfield.ai, suno.com, midjourney.com) and go on when they say done; "later": skip it for now ("setup" brings it back).
 
 ## Reply 2 - install (no spend)
-1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.8` (no tag: fine).
+1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.9` (no tag: fine).
 2. Toolkit: `bash /workspace/claudia/bin/setup.sh --check --json`. `ok` true and `profile` full: say "toolkit ready" (no install). Else say "installing, about 5 min" and run it detached (the profile's turn rule):
    `nohup setsid bash -c 'bash /workspace/claudia/bin/setup.sh --minimal && bash /workspace/claudia/bin/setup.sh --full' > /workspace/claudia-install.log 2>&1 < /dev/null &`
 3. Record their answers (after the install's `--minimal` part, `slop` works):
@@ -33,4 +33,4 @@ After the yes: add a custom MCP server named claudia at https://claudia.gallery/
 4. What is done and what is left: `slop --json onboard status` (send its `text`). Long installs: the profile's turn rule.
 
 ## Hand-off
-Say once: "Ready. Tell me what to make with Claudia: a still, a clip, a song, a music video. Opus asks you at most six questions on the way (the idea, the song, her face, the board, the cost, the first cut) and spends nothing without your yes." Their next message: skill claudia-relay.
+Say once: "Ready. Tell me what to make with Claudia: a still, a clip, a song, a music video. Opus asks you at most six questions on the way (the idea, the song, her face, the board, the cost, the first cut) and spends nothing without your yes. Say 'effort' any time to set how hard it thinks." Their next message: skill claudia-relay.

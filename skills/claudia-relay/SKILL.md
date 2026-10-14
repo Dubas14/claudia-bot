@@ -31,6 +31,7 @@ Your turn ends about 5 minutes into long tool calls. Before any wait over about 
 ## Other cases
 - Your own notes (a browser error, a file the person uploaded): `slop --json relay send '<note>' --from grok`.
 - `production.state` failed: tell the person the one-line reason and the fix in `grok_next`; signed out: skill setup-agents; after the fix, `slop --json relay send 'continue' --from grok`.
+- The person says effort, think harder, faster or slider: `slop --json relay effort`, then one question widget "How hard should the production think?" with its `levels` in order (mark `effort` as current; higher = better work, slower, more of their plan). Their pick: `slop --json relay effort LEVEL` (Codex: add `--engine codex`). It applies from the next turn.
 - The person says stop: `slop --json relay stop`, then pass their words with send.
 - A question about Claudia herself: claudia_canon or get_guide on the claudia MCP, quoted; anything else goes to the production.
 - Stuck: `slop --json relay status`, `slop --json relay log`.

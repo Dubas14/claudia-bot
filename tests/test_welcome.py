@@ -46,7 +46,7 @@ def test_the_shipped_bot_never_offers_the_parked_home_gpu(monkeypatch):
     for f in [*(SKILLS / s / "SKILL.md" for s in BR.ORDER), SKILLS / "profile.md", ROOT / "templates" / "production-brief.md"]:
         text = read(f)
         assert "setup-gpu" not in text and "NVIDIA" not in text and "gpu pair" not in text, f.name
-    monkeypatch.delenv("SLOP_GPU", raising=False)
+    monkeypatch.delenv("SLOP_GPU_LINK", raising=False)
     from slop.onboard import items as I
     r = I._gpu(type("C", (), {"gpu": {"available": True, "mode": "none", "ok": True}})())
     assert r["raw"] == "skipped" and "later update" in r["why"] and "ask" not in r

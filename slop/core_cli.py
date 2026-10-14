@@ -2144,8 +2144,11 @@ def validate_setting(key: str, v):
         raise SlopError(f"budget.{sub} is not a budget key: budget.openrouter_usd, budget.higgsfield_credits, "
                         "budget.confirm_over_usd, budget.motion_s")
     if top == "models":
+        if sub == "pin":
+            return str(v).strip().lower() in ("true", "on", "yes", "1") if not isinstance(v, bool) else v
         if sub not in ("image", "video", "video_cheap", "edit", "vlm", "text", "song", "whisper"):
-            raise SlopError(f"models.{sub}: the model slots are image, video, video_cheap, edit, vlm, text, song, whisper")
+            raise SlopError(f"models.{sub}: the model slots are image, video, video_cheap, edit, vlm, text, song, "
+                            "whisper (models.pin true keeps them exactly as set)")
         if not (isinstance(v, str) and MODEL_ID_RE.match(v.strip())):
             raise SlopError(f"{key} must be an OpenRouter model id like openai/gpt-image-2 (list them: slop gen models "
                             f"--kind {'video' if sub.startswith('video') else 'image' if sub in ('image', 'edit') else 'text'})")
@@ -2178,8 +2181,17 @@ def validate_setting(key: str, v):
             raise SlopError("audio.downbeat_method must be kick, harmony or auto")
         return v
     if top == "mj":
-        if sub not in ("params", "profile"):
-            raise SlopError("mj keys: mj.params (e.g. \"--ar 16:9 --v 8.2 --raw\"), mj.profile (the user's OWN code)")
+        if sub not in ("params", "profile", "raw", "hd", "personalize", "version"):
+            raise SlopError("mj keys: mj.params (e.g. \"--ar 16:9\"; never a --v), mj.raw / mj.hd / mj.personalize "
+                            "(true|false, the person's choice), mj.version (only when they asked for one), mj.profile")
+        if sub in ("raw", "hd", "personalize"):
+            if isinstance(v, bool):
+                return v
+            if str(v).strip().lower() in ("true", "on", "yes", "1"):
+                return True
+            if str(v).strip().lower() in ("false", "off", "no", "0"):
+                return False
+            raise SlopError(f"mj.{sub}: true or false")
         return "" if v is None else str(v).strip()
     return v                                                         # chrome, looks: engine options, stored as given
 

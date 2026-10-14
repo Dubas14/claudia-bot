@@ -40,7 +40,7 @@ DIST = SKILLS_DIR / "dist" / "recipe.json"
 ORDER = ["claudia-welcome", "claudia-setup", "claudia-relay", "grok-imagine", "midjourney", "suno", "setup-accounts",
          "setup-agents", "claudia-toolkit"]
 # kept in the repository, not shipped yet: the home-GPU link waits for the relay (the bot's computer cannot open a
-# quick tunnel); `slop gpu` itself is switched off unless SLOP_GPU=1
+# quick tunnel); the checklist offers it only with SLOP_GPU_LINK=1
 PARKED = ["setup-gpu"]
 # stage guides kept in the repository for the production (Opus reads them); not part of the Grok Bot template
 PRODUCTION = ["mv-quick", "mv-studio", "mv-director", "song", "taste", "storyboard", "plates", "clips",

@@ -27,8 +27,9 @@ def test_the_relay_takes_midjourney_suno_and_browser_jobs_for_grok(tmp_path, mon
     env = RT.setup(tmp_path, monkeypatch)
     assert K.run("relay", "setup")[0] == 0
     rc, out = K.run("relay", "job", "--kind", "midjourney", "--text", "close-up of a woman --ar 16:9 --v 8.2",
-                    "--text", "wide shot of a city --ar 16:9 --v 8.2", "--name", "plates")
+                    "--text", "wide shot of a city --ar 16:9 --v 8.2 --p abc123x", "--name", "plates")
     assert rc == 0 and "Grok runs it in its own browser" in out["text"], out
+    assert "dropped --v 8.2" in out["text"] and "P button" in out["text"] and "abc123x" not in str(out)
     rc, out = K.run("relay", "job", "--kind", "suno", "--title", "Hook", "--style", "glassy synth pop",
                     "--instrumental")
     assert rc == 0, out
@@ -38,12 +39,13 @@ def test_the_relay_takes_midjourney_suno_and_browser_jobs_for_grok(tmp_path, mon
     rc, r = K.run("relay", "read")
     assert rc == 0
     jobs = {j["job_kind"]: j for j in r["jobs"]}
-    assert jobs["midjourney"]["text"] == ["close-up of a woman --ar 16:9 --v 8.2", "wide shot of a city --ar 16:9 --v 8.2"]
+    assert jobs["midjourney"]["text"] == ["close-up of a woman --ar 16:9", "wide shot of a city --ar 16:9"]
+    assert jobs["midjourney"]["personalize"] is True
     assert jobs["midjourney"]["expect_count"] == 8 and jobs["midjourney"]["save"].endswith("midjourney")
     assert jobs["suno"]["style"] == "glassy synth pop" and jobs["suno"]["instrumental"] is True
     assert jobs["browser"]["url"] == "https://example.com"
     nxt = r["grok_next"]
-    assert "skill midjourney" in nxt and "skill suno" in nxt and "your browser" in nxt
+    assert "skill midjourney" in nxt and "skill suno" in nxt and "your browser" in nxt and "the P button on" in nxt
     assert "to the person" not in nxt, "browser work never goes to the person"
     rc, out = K.run("relay", "done", jobs["browser"]["job"], "--note", "the title is Example Domain")
     assert rc == 0, out

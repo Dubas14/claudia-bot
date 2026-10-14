@@ -138,7 +138,8 @@ def aspect(project: dict) -> str:
 
 
 def default_model(project: dict) -> str:
-    return (project.get("models") or {}).get("video") or vid.DEFAULT_MODEL
+    from . import models as M
+    return M.resolve(project, "video", vid.DEFAULT_MODEL, "video")
 
 
 def sung_default_model(project: dict) -> tuple[str, str | None]:
@@ -146,8 +147,10 @@ def sung_default_model(project: dict) -> tuple[str, str | None]:
     m = default_model(project)
     if vid.media_refs_ok(m):
         return m, None
-    return vid.DEFAULT_MODEL, (f"project models.video {m} takes no audio reference, so it cannot lip-sync: this sung clip "
-                               f"uses {vid.DEFAULT_MODEL} (cheaper drafts: --model bytedance/seedance-2.0-mini)")
+    from . import models as M
+    best = M.latest(vid.DEFAULT_MODEL, "video")
+    return best, (f"project models.video {m} takes no audio reference, so it cannot lip-sync: this sung clip uses "
+                  f"{best} (cheaper drafts: the newest seedance mini, see slop gen models --kind video)")
 
 
 def model_problem(c: dict) -> str | None:
@@ -998,7 +1001,7 @@ def clip_cost(c: dict) -> dict:
         cr = hf.credits(int(b.get("duration") or 5), b.get("resolution") or "720p")
         return {"credits": cr, "usd": round(cr * hf.USD_PER_CREDIT, 2)}
     try:
-        usd = reg.estimate_video(c.get("model") or vid.DEFAULT_MODEL, float(b.get("duration") or 5), b.get("resolution") or "720p",
+        usd = reg.estimate_video(c.get("model") or reg.latest(vid.DEFAULT_MODEL, "video"), float(b.get("duration") or 5), b.get("resolution") or "720p",
                                  generate_audio=bool(b.get("generate_audio", True)))
     except SlopError:
         usd = None

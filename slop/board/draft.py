@@ -321,7 +321,8 @@ class _Offline:
 
 def plan_cost(proj: dict, windows: list[dict], cover: float = COVER_ALLOWANCE, resolution: str = "720p") -> dict:
     """$ estimate for planned clip windows (+ the cover allowance on sung seconds); never calls the network."""
-    model = (proj.get("models") or {}).get("video") or "bytedance/seedance-2.5"
+    from ..gen import models as M, video as V
+    model = M.resolve(proj, "video", V.DEFAULT_MODEL, "video", offline=True)
     out: dict = {"model": model, "resolution": resolution, "est_usd": None, "est_usd_with_covers": None}
     if not windows:
         out["est_usd"] = out["est_usd_with_covers"] = 0.0

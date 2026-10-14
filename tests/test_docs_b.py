@@ -188,9 +188,9 @@ def test_scrubbed(name):
     assert not hits, f"{name} must not ship: " + "; ".join(sorted(set(hits)))
     for m in re.finditer(r"--(?:profile|p)\s+(<[^>\n]*>|[^\s`\"',;)]+)", src):
         assert m.group(1).startswith("<") and m.group(1).endswith(">"), f"{name}: a concrete profile code: {m.group(0)}"
-    # the placeholder is how a profile code is written in these docs
+    # a profile code is never written into a prompt: personalization is the P button
     if name == "50-plates-midjourney.md":
-        assert "<YOUR_PROFILE_CODE>" in src
+        assert "**Never a profile code:**" in src and "<YOUR_PROFILE_CODE>" not in src
 
 
 def test_this_test_file_is_scrubbed_too(monkeypatch):
@@ -226,8 +226,8 @@ def test_mj_grammar_slots_in_order():
 def test_mj_facts():
     f = flat("50-plates-midjourney.md")
     for needle in [
-        "--ar 16:9 --v 8.2 --raw --hd --p <YOUR_PROFILE_CODE>", "Never a bare `--p`", "Global V7", "unlocks",
-        "New Profile", "code pins one version", "Personalization toggle OFF", "`--oref`", "Edit Model",
+        "**Never `--v`:**", "**Never a profile code:**", "P button", "Personalize", "unlocks", "a record, not a setting",
+        "`mj.personalize`", "`--oref`", "Edit Model",
         "≤ 4 (Basic), ≤ 10 (Standard), ≤ 40 (Pro, Mega)", r"`\,`", "variety pool", "`lead.far`", "`lead.possessive`",
         "Caucasian American", "2944×1648", "1456×816", "no text, no letters, no logos", "Grok runs Midjourney in its browser",
         "never type, read or store your password", "never by position", "plates/picks.json", "cand_k",
@@ -257,7 +257,7 @@ def test_mj_permutation_example_expands_to_stated_count():
     for j in jobs:
         prompt, params = j.split(" --ar ", 1)
         assert prompt.endswith("no text, no letters, no logos")
-        assert params.startswith("16:9 --v 8.2 --raw --hd --p ")
+        assert params.strip() == "16:9 --raw", params                # no --v, no profile code
     # escaping a real comma-heavy plate prompt the documented way survives the round trip
     plate = "close-up of a woman, eyes closed, the lower third empty, no text, no letters, no logos"
     paste = "{" + ", ".join(p.replace(",", "\\,") for p in [plate, plate]) + "} --ar 16:9"

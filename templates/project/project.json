@@ -20,14 +20,18 @@
   "hero_plate": null
  },
  "mj": {
-  "params": "--ar 16:9 --v 8.2 --raw --hd",
+  "params": "--ar 16:9",
+  "raw": true,
+  "hd": false,
+  "personalize": true,
   "profile": ""
  },
  "models": {
   "image": "openai/gpt-image-2",
   "video": "bytedance/seedance-2.5",
   "video_cheap": "bytedance/seedance-2.0-mini",
-  "edit": "google/gemini-3-pro-image"
+  "edit": "google/gemini-3-pro-image",
+  "pin": false
  },
  "budget": {
   "openrouter_usd": 20,

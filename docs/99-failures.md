@@ -68,7 +68,7 @@ between them · **[ops]** the owner's agent-swarm runs · **[tk]** found while b
 | D12 | The robotaxi came back as an old sedan [EV] | the object's form factor wasn't named | name it ("a small white compact electric SUV robotaxi with a tall spinning lidar dome") | 50 |
 | D13 | The same image on ~6 shots [EV] | stand-in aliases left in the board | one plate per shot; re-assign repeats to the 3 non-picked candidates of each job (the free variety pool) | 40, 80 §2 |
 | D14 | "Dithered/xerox" prompt gave a grainy photo [EV] | the generator doesn't make real 1-bit | texture in code (print look), never in the prompt | 70 §8 |
-| D15 | Plates in the wrong style profile [EV] | bare `--p` falls back to a global profile | the user's own profile code, explicitly (stored in `project.json`, never shipped) | 50 |
+| D15 | Plates in the wrong style profile [EV] | personalization applied the account's old default profiles | set the right default profiles on Midjourney's Personalize page; Grok presses P only when `mj.personalize` is on | 50 |
 | D16 | A hand-painted fix in code (chrome eyes) [SP] | fixing the frame instead of the source | bake it into the prompt or use the image-edit model; never paint pixels | 51-plates-api |
 | D17 | The edit model introduced a new error (a six-pointed star instead of eight) [SP] | edit models invent details | re-check canon after every edit; name the exact form ("exactly eight points") | 51, examples/image-edit |
 | D18 | Edited plates rendered with their old depth and mattes [SP] | media prep not re-run | re-run `slop edit export` after every plate edit (it re-makes the depth when the plate changed) | 70 §12 |

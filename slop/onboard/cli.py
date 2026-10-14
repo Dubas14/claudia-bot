@@ -181,7 +181,8 @@ def cmd_apply(a) -> dict:
     changes = []
     if code and cur != code:
         mj["profile"] = code
-        changes.append(f"mj.profile from your user settings ({st.mask(code)}): the plate book adds --profile")
+        changes.append(f"mj.profile from your user settings ({st.mask(code)}), kept private: prompts never carry "
+                       "it (personalization is the P button)")
     if plan and str(mj.get("plan") or "standard").lower() != plan:
         mj["plan"] = plan
         changes.append(f"mj.plan = {plan}: prompt batches sized for the {plan.title()} plan")

@@ -12,7 +12,7 @@ Both services' terms forbid automated use; the owner's account can be suspended.
 3. Each batch: show what you will submit (the prompts, the expected job count, the cost in their credits) and wait for their yes in chat.
 4. Fill forms only.
    - Midjourney: one tab, the batch folder open, Sheet A lines or the permutation block from the book. Click Yes only when the confirmation count equals the expected count. Identify every job by its prompt text, never by position (§9 rules 3-4).
-   - Suno: Custom mode; paste style, exclude, lyrics and title from the files in suno/; settings from suno/settings.md. Press Create only as many times as the owner said.
+   - Suno: the advanced form (the Advanced tab today), newest model; paste style, exclude, lyrics and title from the files in suno/; settings from suno/settings.md. Press Create only as many times as the owner said.
 5. Downloads only through the site's own Download buttons (Midjourney: the batch folder with the Profiles filter; Suno: WAV, on a paid plan). Never fetch files with cookies, from a CDN, or by recording.
 6. Anything unexpected (a dialog, a changed layout, an error, a payment or login prompt): stop and ask. Never retry a login or a payment.
 7. Into the pipeline: `slop --json -p NAME plates ingest FILE --batch BATCH` (Midjourney) or `slop --json -p NAME song ingest FILE` (Suno), with FILE = the full path in the browser's download folder.

@@ -683,9 +683,12 @@ Format: one tag per line, in square brackets, section name, a dash, then comma-s
 
 ### 4.4 The settings card
 
+What the films used. Suno's page and models change often: the model is always the newest the page offers (the films
+used v6), and a setting the page no longer has is skipped, never guessed.
+
 | Setting | Value | Why |
 |---|---|---|
-| Model | **v6** (Custom mode, Advanced options open) | v6 and v6-wild are on paid plans; Free gets v6-mini only |
+| Model | **the newest** (the page's default, in the advanced form) | the films used v6; paid plans get the full models |
 | Voice | the owner's Voice, if any | keeps the same singer across videos (SP used a Voice made from EV) |
 | "Overwrite Styles?" (appears when a Voice is attached) | **Keep Current** | otherwise the Voice's own style replaces your style string |
 | Audio Influence | **75 %** (default 25 %) | the Voice must dominate; shown only with a Voice or an audio upload |
@@ -714,8 +717,8 @@ Format: one tag per line, in square brackets, section name, a dash, then comma-s
 ### 4.6 The message to the owner (template)
 
 ```
-Here is the Suno pack for <TITLE>. On suno.com/create, Custom mode, open Advanced options:
-1. Model v6. <If Voice: attach "<VOICE>"; when asked "Overwrite Styles?" choose Keep Current.>
+Here is the Suno pack for <TITLE>. On suno.com/create, the advanced form:
+1. The newest model the page offers. <If Voice: attach "<VOICE>"; when asked "Overwrite Styles?" choose Keep Current.>
 2. Paste Style, Exclude, Lyrics and Title from the blocks below.
 3. Settings: Audio Influence 75 %, Variety off, Max Mode on, Weirdness 50 %, Style Influence 50 %, My Taste off.
 4. Press Create <N> times (each Create gives 2 takes). Don't download yet: listen in the player.

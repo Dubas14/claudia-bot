@@ -27,8 +27,8 @@ SearchPlugins for Google Drive; missing and wanted: the same widget rule. List o
 2. Sign-in: open https://suno.com in your browser; the person signs in there once (you never type passwords). Say once: "Heads-up: Suno's terms limit automated use; I only make songs when you or Opus ask, on your account." You see their library: `slop --json onboard mark suno-signin --done`. From then on you run Suno for Opus (skill suno).
 
 ## Midjourney (items midjourney, mj-profile, mj-signin; docs/50-plates-midjourney.md §2.1 and §2.2)
-1. The plan: `slop --json onboard set mj-plan standard` (basic, standard, pro, mega or none); it sizes each paste.
-2. Their personal profile code (their look; never anyone else's): they make a profile as §2.2 says (Personalize, a V8 profile, one test prompt; the code shows on the job). Record it: `slop --json onboard set mj-profile CODE`. It stays in their user settings; never post it. Per project: `slop --json -p NAME onboard apply`. No profile yet: plates look generic; say so once and offer to wait.
+1. The plan: `slop --json onboard set mj-plan standard` (basic, standard, pro, mega or none); it sizes each batch (a project made before: `slop --json -p NAME onboard apply`).
+2. Personalization (their own look): nothing to record, no code. If they want it, they make a profile once on midjourney.com's Personalize page (the picking is their taste; you open the page, §2.2). Opus asks per project whether to use it; you switch it on with the P button. No profile: plates look generic; say so once.
 3. Sign-in: open https://www.midjourney.com in your browser; the person signs in there once, with the same one-line heads-up. You see their Create page: `slop --json onboard mark mj-signin --done`. From then on you run Midjourney for Opus (skill midjourney).
 
 ## Are.na (item arena; optional; docs/30-taste.md §2.4)

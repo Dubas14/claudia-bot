@@ -287,7 +287,7 @@ def test_setup_accounts_covers_every_account():
     text = read(SKILLS / "setup-accounts" / "SKILL.md")
     for must in ("OPENROUTER_API_KEY", "credit limit", "SearchPlugins", "question widget", "next turn",
                  "onboard mark higgsfield --connected", "onboard mark drive --connected", "onboard set suno-plan",
-                 "suno-signin --done", "skill suno", "onboard set mj-plan", "onboard set mj-profile CODE",
+                 "suno-signin --done", "skill suno", "onboard set mj-plan", "P button",
                  "onboard apply", "mj-signin --done", "skill midjourney", "never type passwords", "ARENA_TOKEN",
                  "secure secret card"):
         assert must in text, must

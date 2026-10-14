@@ -150,6 +150,15 @@ def relay_turn(engine: str, prompt: str | None = None) -> int:
     msgs = re.findall(r"--- message #(\d+) from [^\n]*---\n(.*?)\n--- end of message #\1 ---", prompt, re.S)
     record(relay=True, session=sid, resumed=bool(resume), messages=[int(m[0]) for m in msgs],
            cwd=os.getcwd(), slop=shutil.which("slop"), turn=os.environ.get("SLOP_RELAY_TURN"))
+    if os.environ.get("FAKE_REJECT_EFFORT"):         # $FAKE_REJECT_EFFORT: this engine takes no effort level
+        if engine == "claude" and "--effort" in ARGS:
+            sys.stderr.write("error: unknown option '--effort'" + chr(10))
+            return 1
+        if engine == "codex" and any("model_reasoning_effort" in a for a in ARGS):
+            out(json.dumps({"type": "thread.started", "thread_id": sid}))
+            out(json.dumps({"type": "turn.failed", "error": {"message": "Unsupported value: 'xhigh' is not "
+                                                                        "supported with this model (reasoning.effort)"}}))
+            return 1
     if engine == "claude":
         out(json.dumps({"type": "system", "subtype": "init", "session_id": sid, "model": "fake-opus",
                         "mcp_servers": [{"name": "claudia", "status": "connected"}], "tools": ["Bash"]}))

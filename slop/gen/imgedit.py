@@ -139,7 +139,9 @@ def edit(pdir: Path, src: Path, out: Path, instruction: str, *, refs: list[Path]
         warnings.append(f"{src.name} was generated from an illustration prompt but the edit says 'photograph … "
                         "Photorealistic': if this plate is illustrated, re-run with --medium illustration (or set "
                         "look.medium to \"illustration\" in project.json)")
-    model = model or DEFAULT_MODEL
+    if not model:
+        from . import models as M
+        model = M.latest(DEFAULT_MODEL, "image")
     try:
         est = reg.estimate_edit(model, 1 + len(refs or []))
     except SlopError:

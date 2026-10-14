@@ -51,7 +51,7 @@ def test_book_permutation_blocks_and_canon(tmp_path):
         parts = _split_perm(text)
         assert len(parts) == b["expect"] <= 10
         total += len(parts)
-        assert text.endswith("} --ar 16:9 --v 8.2 --raw --hd")
+        assert text.endswith("} --ar 16:9 --raw --hd")           # an older project's --v 8.2 is dropped
         for part in parts:
             assert part.endswith("no text\\, no letters\\, no logos")
             assert "{" not in part and "}" not in part
@@ -61,7 +61,8 @@ def test_book_permutation_blocks_and_canon(tmp_path):
     lead_jobs = [j for j in bj["jobs"] if j["lead"]]
     assert lead_jobs and all(synth.CANON[:30] in j["prompt"] for j in lead_jobs)
     md = (p / "plates/prompts.md").read_text(encoding="utf-8")
-    assert "Run **" in md and "Personalization off" in md
+    assert "Run **" in md and "Personalization on (the P button)" in md and "Midjourney's default" in md
+    assert "--v " not in md
     for f in [p / "plates/prompts.md", *sorted((p / "plates/mj").iterdir())]:
         assert "--profile" not in f.read_text(encoding="utf-8")
     # pro plan: one paste for up to 40
@@ -69,21 +70,27 @@ def test_book_permutation_blocks_and_canon(tmp_path):
     assert len(r["blocks"]) == 1 and len(list((p / "plates/mj").glob("b01.perm-*.txt"))) == 1
 
 
-def test_book_profile_only_from_the_users_own_code(tmp_path):
+def test_book_never_a_version_or_a_profile_code_and_the_persons_switches(tmp_path):
     p, S = _board(tmp_path, mj={"params": "--ar 16:9 --v 8.2 --raw --hd --profile zzz999", "profile": ""})
     plates.book(p)
-    assert "zzz999" not in (p / "plates/mj/b01.lines.txt").read_text(encoding="utf-8")
+    lines = (p / "plates/mj/b01.lines.txt").read_text(encoding="utf-8")
+    assert "zzz999" not in lines and "--v " not in lines and "--profile" not in lines
     pj = synth.load(p, "project.json")
     pj["mj"]["profile"] = "<USER'S OWN CODE or empty>"
     (p / "project.json").write_text(json.dumps(pj), encoding="utf-8")
     r = plates.book(p)
     assert any("placeholder" in w for w in r["warnings"])
-    assert "--profile" not in (p / "plates/mj/b01.lines.txt").read_text(encoding="utf-8")
-    pj["mj"]["profile"] = "myOwn42"
+    pj["mj"].update(profile="myOwn42", raw=False, hd=False, personalize=False)
     (p / "project.json").write_text(json.dumps(pj), encoding="utf-8")
     plates.book(p)
     lines = (p / "plates/mj/b01.lines.txt").read_text(encoding="utf-8").strip().splitlines()
-    assert all(l.endswith("--profile myOwn42") for l in lines)
+    assert lines and all(l.endswith("--ar 16:9") for l in lines), lines[:2]   # the code never; P is a button
+    assert "**Personalization off**" in (p / "plates/prompts.md").read_text(encoding="utf-8")
+    pj["mj"].update(raw=True, hd=True, version="8.2")                          # a version only when they asked
+    (p / "project.json").write_text(json.dumps(pj), encoding="utf-8")
+    plates.book(p)
+    lines = (p / "plates/mj/b01.lines.txt").read_text(encoding="utf-8").strip().splitlines()
+    assert all(l.endswith("--ar 16:9 --raw --hd --v 8.2") for l in lines), lines[:2]
 
 
 def test_book_todo_braces_and_api_jobs(tmp_path):

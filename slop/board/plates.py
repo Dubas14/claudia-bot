@@ -242,16 +242,47 @@ def expand(prompt: str, e: dict, proj: dict) -> tuple[str, list[str]]:
     return pr, warn
 
 
+MJ_VERSION = re.compile(r"\s*--(?:v|version|niji)\s+\d[\w.]*", re.I)
+MJ_PROFILE = re.compile(r"\s*--(?:p|profile|personalize)\b(?:\s+(?!--)\S+)*", re.I)
+
+
+def mj_line(text: str, mj: dict | None = None) -> tuple[str, list[str]]:
+    """A Midjourney prompt (or just its parameters) as the person set Midjourney up -> (line, what changed). Never a
+    version: Midjourney's default is its newest model (mj.version only when they asked for one). Never a profile
+    code: personalization goes on with the P button (mj.personalize). --raw and --hd as they chose (mj.raw, mj.hd;
+    a project without those keys keeps what the line says)."""
+    mj = mj if isinstance(mj, dict) else {}
+    line, did = " " + str(text or "").strip(), []
+    found = [m.strip() for m in MJ_VERSION.findall(line)]
+    line = MJ_VERSION.sub("", line)
+    want = str(mj.get("version") or "").strip()
+    if want:
+        line += f" --v {want}"
+        if found != [f"--v {want}"]:
+            did.append(f"--v {want} (the version the person asked for)")
+    elif found:
+        did.append("dropped " + ", ".join(dict.fromkeys(found)) + " (Midjourney's default is its newest model)")
+    if MJ_PROFILE.search(line):
+        line = MJ_PROFILE.sub("", line)
+        did.append("dropped the profile parameter (personalization is the P button)")
+    for flag in ("raw", "hd"):
+        if flag not in mj:
+            continue
+        has = re.search(rf"\s--{flag}\b", line) is not None
+        if mj.get(flag) and not has:
+            line += f" --{flag}"
+            did.append(f"added --{flag} (mj.{flag} on)")
+        elif not mj.get(flag) and has:
+            line = re.sub(rf"\s*--{flag}\b", "", line)
+            did.append(f"dropped --{flag} (mj.{flag} off)")
+    return re.sub(r"\s+", " ", line).strip(), did
+
+
 def mj_params(e: dict, proj: dict) -> str:
     mj = proj.get("mj") or {}
-    base = (e.get("params") or mj.get("params") or "--ar 16:9 --v 8.2 --raw --hd").strip()
+    base = mj_line(e.get("params") or mj.get("params") or "--ar 16:9", mj)[0]
     if e.get("aspect") and e["aspect"] != "16:9" and not e.get("params"):
         base = re.sub(r"--ar\s+\S+", f"--ar {e['aspect']}", base) if "--ar" in base else f"--ar {e['aspect']} {base}"
-    # the only profile code that ever ships is the user's own, from project.json mj.profile
-    base = re.sub(r"\s*--(?:p|profile)\b(\s+(?!--)[^\s]+)*", "", " " + base).strip()
-    prof = valid_profile(mj.get("profile"))
-    if prof:
-        base += f" --profile {prof}"
     if e.get("irefs") and e.get("iw") is not None and "--iw" not in base:
         base += f" --iw {e['iw']}"
     return re.sub(r"\s+", " ", base).strip()
@@ -565,8 +596,9 @@ def _book_md(proj, pdir, batch, plan, limit, mj_jobs, api_jobs, blocks, todo, wa
         out += [f"Not in this book yet (prompt still TODO in board/shots.json): {', '.join(todo)}", ""]
     if mj_jobs:
         out += ["## Before you paste (midjourney.com)", "",
-                "1. Settings: Version 8.2, Raw on, HD on, **Personalization off** (a profile code, if any, is already in "
-                "the params), **Fast** mode (permutations need Fast or Turbo).",
+                "1. Settings: leave Version on Midjourney's default (its newest); Raw and HD are in the params; "
+                f"**Personalization {'on (the P button)' if (proj.get('mj') or {}).get('personalize', True) else 'off'}**; "
+                "**Fast** mode (permutations need Fast or Turbo).",
                 f"2. Create a folder named exactly `{batch}` and open it, so the Imagine bar says \"Generating in {batch}\".",
                 "3. Paste ONE block at a time. Midjourney asks \"Run N prompts?\": N must equal the number written above "
                 "the block. If it differs, click **No** and tell the bot (a comma was not escaped)."
@@ -1484,4 +1516,4 @@ def box(pdir: Path, plate: str, label: str | None = None, uv: str | None = None,
 
 
 __all__ = ["book", "ingest", "ingest_urls", "box", "read_boxes", "style_tail", "sheet", "pick", "vary", "status",
-           "plate_entries", "expand", "mj_params", "perm_escape", "parse_pairs", "valid_profile", "FRAMINGS"]
+           "plate_entries", "expand", "mj_line", "mj_params", "perm_escape", "parse_pairs", "valid_profile", "FRAMINGS"]

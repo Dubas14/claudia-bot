@@ -96,9 +96,14 @@ def test_apply_waits_for_the_production_and_keeps_local_changes(box, monkeypatch
         U.cmd_apply(type("A", (), {"to": None, "force": False})())
     monkeypatch.setattr(U, "_production_state", lambda: "idle")
     (box["checkout"] / "slop" / "__init__.py").write_text('__version__ = "0.2.5"\n# edited\n')
-    with pytest.raises(SlopError, match="local changes"):
-        U.cmd_apply(type("A", (), {"to": None, "force": False})())
-    assert U.current() == (0, 2, 5)
+    out = U.cmd_apply(type("A", (), {"to": None, "force": False})())   # a local fix never blocks an update
+    assert out["updated"] and out["stashed"] == ["slop/__init__.py"] and "set aside" in out["text"]
+    assert U.current() == (0, 2, 6)
+    assert "claudia update to v0.2.6" in git(box["checkout"], "stash", "list")
+    assert "# edited" in git(box["checkout"], "stash", "show", "-p"), "the local edit is kept"
+    (box["checkout"] / "slop" / "__init__.py").write_text('__version__ = "0.2.6"\n# edited again\n')
+    again = U.cmd_apply(type("A", (), {"to": None, "force": False})())
+    assert again["updated"] is False and "edited again" in (box["checkout"] / "slop" / "__init__.py").read_text()
 
 
 def test_notes_since_takes_only_newer_versions():

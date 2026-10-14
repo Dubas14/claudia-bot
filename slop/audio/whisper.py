@@ -218,11 +218,14 @@ def find_cached(paths: Paths, model: str | None = None) -> dict | None:
             "tag": f"{best['model']}@{best.get('at')}"}
 
 
-def transcribe(pdir: Path, windows: list[tuple[float, float]] | None = None, model: str = DEFAULT_MODEL,
+def transcribe(pdir: Path, windows: list[tuple[float, float]] | None = None, model: str | None = None,
                yes: bool = False, force: bool = False, post=None, usd_per_s: float | None = None) -> dict:
     """Whisper words for the vocal stem -> {"words": [{w, t0, t1, win, conf?}], "windows", "cost_usd" (paid in THIS
     call), "cost_total_usd", "cached" (nothing paid), "cached_windows", "tag"}. Windows already in the cache are not
     sent again; each new window is cached the moment it arrives."""
+    if not model:
+        from ..gen import models as M
+        model = M.latest(DEFAULT_MODEL, "audio")
     from slop import ledger
     paths = Paths(pdir)
     voc = paths.stem("vocals")

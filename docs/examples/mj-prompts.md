@@ -1,8 +1,9 @@
 # Midjourney prompts by framing (verbatim, scrubbed)
 
 Plate prompts that shipped in the reference videos, grouped by framing, each with a one-line note on why it worked. All
-ran on Midjourney v8.2 with `--ar 16:9 --v 8.2 --raw --hd` plus the creator's own personal profile (`--profile <your own
-code>`; never use or ship someone else's code; never bare `--p`). No style references. The grammar is in
+ran on Midjourney v8.2 with `--ar 16:9 --v 8.2 --raw --hd` plus the creator's own personal profile. That is a record:
+today use Midjourney's newest model (never type `--v`), Raw and HD as you choose, and your own profile through the P
+button (never a code in a prompt; never use or ship someone else's). No style references. The grammar is in
 `50-plates-midjourney.md`:
 
 ```

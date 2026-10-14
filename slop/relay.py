@@ -72,6 +72,11 @@ JOB_ENV = ("SLOP_JOB_ID", "SLOP_PROGRESS_FILE", "SLOP_JOB_FILE", "SLOP_FREE_ONLY
 NO_SESSION_RE = re.compile(r"(?i)no conversation found|session[^.\n]{0,40}not found|thread[^.\n]{0,40}not found")
 SIGNIN_RE = re.compile(r"(?i)\b401\b|authenticat|not logged in|please (?:log|sign) ?in|invalid[^.\n]{0,30}token")
 LIMIT_RE = re.compile(r"(?i)usage limit|rate limit|session limit|hit your limit|limit reached")
+EFFORT_DEFAULT = "xhigh"       # both engines; a level the engine or its model does not take falls back to its default
+EFFORT_ENV = {"claude": "SLOP_CLAUDE_EFFORT", "codex": "SLOP_CODEX_EFFORT"}
+EFFORT_USUAL = {"claude": ("low", "medium", "high", "xhigh", "max"), "codex": ("low", "medium", "high", "xhigh")}
+EFFORT_RE = re.compile(r"(?i)effort")
+EFFORT_FAST_S = 90.0           # an effort complaint only counts when the turn failed this fast (before any real work)
 
 
 # ================================================================================================== files and lock
@@ -655,17 +660,36 @@ def _read_text(text: str | None, path: str | None, what: str) -> str | None:
     return text
 
 
+def _project_mj(base: Path) -> dict:
+    try:
+        mj = json.loads((base / "project.json").read_text(encoding="utf-8")).get("mj")
+    except (OSError, ValueError, AttributeError):
+        return {}
+    return mj if isinstance(mj, dict) else {}
+
+
 def cmd_job(a) -> dict:
     """(the production) ask Grok for browser work: Grok Imagine, Midjourney, Suno or any other site, all in Grok's own
     signed-in browser; --kind person only for what only a person can do (a sign-in Grok cannot finish)."""
     wd, rd = _dirs()
     base = _save_base(a, wd)
     rec: dict = {"kind": "job", "job_kind": a.kind, "what": a.what, "note": a.note}
+    adjusted: list[str] = []
     if a.kind == "midjourney":
         if not a.text:
             raise SlopError("a midjourney job needs its prompts: --text '<one full prompt with its parameters>', once "
                             "per prompt (each becomes its own Midjourney job of four images)")
-        rec.update(text=list(a.text), expect_count=4 * len(a.text))
+        # the person's Midjourney setup, whatever the prompt says: no --v (its default is its newest model), no
+        # profile code (Grok presses the P button), --raw / --hd as they chose (project.json mj)
+        from .board.plates import mj_line
+        mj = _project_mj(base)
+        texts = []
+        for t in a.text:
+            line, did = mj_line(t, mj)
+            texts.append(line)
+            adjusted += [d for d in did if d not in adjusted]
+        pers = a.personalize or ("on" if mj.get("personalize", True) else "off")
+        rec.update(text=texts, expect_count=4 * len(texts), personalize=pers == "on")
     elif a.kind == "suno":
         lyrics = _read_text(a.lyrics, a.lyrics_file, "lyrics")
         if not (a.style or "").strip():
@@ -718,9 +742,15 @@ def cmd_job(a) -> dict:
         _append(rd / "outbox.jsonl", {k: v for k, v in rec.items() if v is not None})
     _log(rd, f"out #{oid} job {jid} ({a.kind}{' ' + a.what if a.what else ''})")
     who = "Grok gives it to the person" if a.kind == "person" else "Grok runs it in its own browser"
-    return {"id": oid, "job": jid, "save": str(save),
+    extra = ""
+    if a.kind == "midjourney":
+        extra = (f" Personalization: {'on (Grok presses the P button)' if rec['personalize'] else 'off'}."
+                 + (" The prompts follow the person's Midjourney setup: " + "; ".join(adjusted) + "." if adjusted
+                    else ""))
+    return {"id": oid, "job": jid, "save": str(save), "adjusted": adjusted,
             "text": f"posted job {jid} ({a.kind}): {who}; the result comes back as an inbox message "
-                    f"(\"[grok] {jid} done: files ...\"). End the turn now if nothing else can go on meanwhile."}
+                    f"(\"[grok] {jid} done: files ...\").{extra} End the turn now if nothing else can go on "
+                    "meanwhile."}
 
 
 def _open_job(rd: Path, jid: str) -> dict:
@@ -785,7 +815,8 @@ def _render_item(r: dict) -> str:
 
 
 JOB_FIELDS = ("id", "job", "job_kind", "what", "prompt", "image", "aspect", "seconds", "save", "name", "note", "text",
-              "expect", "title", "style", "lyrics", "exclude", "instrumental", "url", "expect_count", "status", "ts")
+              "expect", "title", "style", "lyrics", "exclude", "instrumental", "url", "personalize", "expect_count",
+              "status", "ts")
 SKILL_FOR = {"grok-imagine": "grok-imagine", "midjourney": "midjourney", "suno": "suno"}
 
 
@@ -798,6 +829,8 @@ def _render_job(j: dict) -> str:
     for k in ("prompt", "image", "aspect", "seconds", "save", "name", "note"):
         if j.get(k) not in (None, ""):
             s += f"\n   {k}: {j[k]}"
+    if j.get("job_kind") == "midjourney":
+        s += f"\n   personalization (the P button): {'on' if j.get('personalize', True) else 'off'}"
     for i, block in enumerate(j.get("text") or [], 1):
         s += f"\n   copy block {i}:\n{block}"
     for e in j.get("expect") or []:
@@ -815,6 +848,8 @@ def _grok_next(items: list, prod: dict, jobs: list) -> str:
         k = j.get("job_kind")
         if k in SKILL_FOR or k == "browser":
             how = f"skill {SKILL_FOR[k]}" if k in SKILL_FOR else "your browser, doing what its note says"
+            if k == "midjourney":
+                how += f", the P button {'on' if j.get('personalize', True) else 'off'}"
             steps.append(f"run job {j['job']} with {how} (save into {j.get('save')}, then `slop --json "
                          f"relay done {j['job']} --file PATH`, or `slop --json relay fail {j['job']} --reason '...'`)")
         else:
@@ -915,9 +950,66 @@ def cmd_status(a) -> dict:
              f"  inbox: {len(inbox)} message(s), {prod.get('pending', 0)} not yet read by the production",
              f"  outbox: {len(outbox)} item(s), {unread} not yet shown",
              f"  turns: {st.get('turns', 0)}; open jobs: {', '.join(j['job'] for j in jobs) or 'none'}"]
-    return {"production": prod, "engine": eng, "model": cfg.get("model"), "session": sess, "turns": st.get("turns", 0),
+    eff = effort_for(eng, rd) if eng in ENGINES else (None, "")
+    if eng in ENGINES:
+        lines.insert(2, f"  effort: {eff[0] or 'the engine default'} ({eff[1]}); `slop relay effort` changes it")
+    return {"production": prod, "engine": eng, "model": cfg.get("model"), "effort": eff[0], "session": sess,
+            "turns": st.get("turns", 0),
             "inbox": len(inbox), "outbox": len(outbox), "unread": unread, "jobs": [_job_item(j) for j in jobs],
             "work_dir": str(wd), "relay_dir": str(rd), "text": "\n".join(lines)}
+
+
+def cmd_effort(a) -> dict:
+    """How hard the production thinks, per engine: Claude Code's --effort, Codex's reasoning effort. No level: what
+    each engine uses and the levels it offers; a level: set it for the next turns ('default' = xhigh again, 'auto' =
+    the engine decides)."""
+    from .agents import engines as E
+    wd, rd = _dirs()
+    cfg = _cfg(rd, need=False)
+    eng = E.norm_engine(a.engine) if a.engine else (cfg.get("engine") if cfg.get("engine") in ENGINES else "claude")
+    if eng not in ENGINES:
+        raise SlopError(f"--engine claude or codex (the production's engines), not {a.engine}")
+    levels, src = effort_levels(eng)
+    changed = None
+    if a.level:
+        lv = a.level.strip().lower()
+        if lv not in ("default", "auto"):
+            if not re.fullmatch(r"[a-z]{2,16}", lv):
+                raise SlopError(f"an effort level is one word ({', '.join(levels)}), or default, or auto")
+            if src == "claude --help" and lv not in levels:
+                raise SlopError(f"Claude Code offers {', '.join(levels)} (from claude --help), not {lv}")
+        with _lock(rd):
+            data = _read_json(rd / "effort.json")
+            if lv == "default":
+                data.pop(eng, None)
+            else:
+                data[eng] = lv
+            for k in ("rejected", "rejected_why"):
+                (data.get(k) or {}).pop(eng, None)
+            _write_json(rd / "effort.json", data)
+        changed = lv
+        _log(rd, f"effort: {eng} set to {lv}")
+    data = _read_json(rd / "effort.json")
+    engines = {}
+    lines = []
+    for e in ENGINES:
+        cur, where = effort_for(e, rd)
+        engines[e] = {"effort": cur or "auto", "source": where}
+        title = E.SPEC[e]["title"]
+        lines.append(f"{title} effort: {cur or 'the engine decides (auto)'} ({where})"
+                     + (" - the relay runs this engine" if e == cfg.get("engine") else ""))
+        why = (data.get("rejected_why") or {}).get(e)
+        if why:
+            lines.append(f"  {(data.get('rejected') or {}).get(e)} was turned down: {why[:160]}")
+        if os.environ.get(EFFORT_ENV[e]):
+            lines.append(f"  ${EFFORT_ENV[e]} sets it; `slop relay effort` changes nothing while it is set")
+    lines.append(f"levels for {E.SPEC[eng]['title']}: {', '.join(levels)} ({src}); higher = better work, slower, more "
+                 "of the plan's usage; default = xhigh; auto = the engine decides")
+    if changed:
+        lines.insert(0, f"effort for {E.SPEC[eng]['title']} set to {changed}: it applies from the production's next "
+                        "turn")
+    return {"engine": eng, "effort": engines[eng]["effort"], "levels": levels, "levels_from": src,
+            "default": EFFORT_DEFAULT, "engines": engines, "changed": changed, "text": "\n".join(lines)}
 
 
 def cmd_log(a) -> dict:
@@ -1046,13 +1138,15 @@ def _parse_codex(ev: dict, ps: dict) -> str | None:
 
 
 def engine_argv(eng: str, base: list[str], prompt_arg: str, prompt: str, model: str | None, session: str | None,
-                wd: Path) -> tuple[list[str], str | None]:
+                wd: Path, effort: str | None = None) -> tuple[list[str], str | None]:
     """(argv, stdin text) of one production turn."""
     if eng == "claude":
         argv = base + ["-p", prompt_arg, "--output-format", "stream-json", "--verbose", "--permission-mode",
                        "bypassPermissions"]
         if model:
             argv += ["--model", model]
+        if effort:
+            argv += ["--effort", effort]
         if session:
             argv += ["--resume", session]
         return argv, None
@@ -1060,13 +1154,46 @@ def engine_argv(eng: str, base: list[str], prompt_arg: str, prompt: str, model: 
               "-c", 'sandbox_mode="danger-full-access"', "-c", 'approval_policy="never"']
     if model:
         common += ["-m", model]
+    if effort:
+        common += ["-c", f'model_reasoning_effort="{effort}"']
     if session:                                       # `exec resume` takes no -C: the turn runs in wd anyway
         return base + ["exec", "resume", *common, session, "-"], prompt
     return base + ["exec", *common, "-C", str(wd), "-"], prompt
 
 
+def effort_levels(eng: str) -> tuple[list[str], str]:
+    """The effort levels the engine offers -> (levels, where from). Claude Code lists them in its own help, so a new
+    level shows up the day it ships; Codex does not list them: the usual ones (it may take more, e.g. on newer models)."""
+    if eng == "claude":
+        from .agents import engines as E
+        try:
+            rc, out, err = E.run_cli("claude", ["--help"], timeout=30)
+        except Exception:                                   # noqa: BLE001 - no help: the usual levels
+            rc, out = 1, ""
+        m = re.search(r"--effort\b.{0,240}?\(([a-z]+(?:,\s*[a-z]+)+)\)", out or "", re.S)
+        if rc == 0 and m:
+            return [x.strip() for x in m.group(1).split(",")], "claude --help"
+    return list(EFFORT_USUAL.get(eng, ())), "the usual levels"
+
+
+def effort_for(eng: str, rd: Path) -> tuple[str | None, str]:
+    """(the level a turn passes, or None for the engine's own default; where it came from):
+    $SLOP_CLAUDE_EFFORT / $SLOP_CODEX_EFFORT, else the person's `slop relay effort`, else xhigh. A level the engine
+    turned down (recorded by a turn) is not passed again until a new level is set."""
+    env = os.environ.get(EFFORT_ENV.get(eng, ""), "").strip().lower()
+    if env:
+        return (None if env == "auto" else env), EFFORT_ENV[eng]
+    data = _read_json(rd / "effort.json")
+    lv = str(data.get(eng) or "").strip().lower() or EFFORT_DEFAULT
+    if lv == "auto":
+        return None, "set to auto"
+    if (data.get("rejected") or {}).get(eng) == lv:
+        return None, f"{lv} was turned down by the engine"
+    return lv, ("slop relay effort" if data.get(eng) else "default")
+
+
 def _engine_run(wd: Path, rd: Path, cfg: dict, n: int, prompt: str, session: str | None, msgs: list[dict],
-                attempt: int = 1) -> dict:
+                attempt: int = 1, effort: str | None = "") -> dict:
     from .agents import engines as E
     eng = cfg["engine"]
     b = E.find(eng)
@@ -1081,7 +1208,9 @@ def _engine_run(wd: Path, rd: Path, cfg: dict, n: int, prompt: str, session: str
         pf = tdir / f"{stem}.prompt.md"
         util.atomic_write_text(pf, prompt)
         prompt_arg = f"Read the file {pf.as_posix()} and do what it says."
-    argv, stdin_text = engine_argv(eng, b["argv"], prompt_arg, prompt, cfg.get("model"), session, wd)
+    if effort == "":                                  # "" = the setting; None = the engine's own default
+        effort = effort_for(eng, rd)[0]
+    argv, stdin_text = engine_argv(eng, b["argv"], prompt_arg, prompt, cfg.get("model"), session, wd, effort)
     shim = _shim(rd)
     pp = os.environ.get("PYTHONPATH", "")
     root = str(toolkit_root())
@@ -1093,7 +1222,7 @@ def _engine_run(wd: Path, rd: Path, cfg: dict, n: int, prompt: str, session: str
     env["PATH"] = str(shim) + os.pathsep + env.get("PATH", "")
     ps: dict = {"session": session, "final": None, "is_error": False, "error": None, "text": ""}
     t0 = time.time()
-    tj = {"n": n, "attempt": attempt, "state": "running", "engine": eng, "started": util.iso_now(),
+    tj = {"n": n, "attempt": attempt, "state": "running", "engine": eng, "effort": effort, "started": util.iso_now(),
           "started_ts": round(t0, 3), "messages": [m["id"] for m in msgs], "session": session, "pid": None,
           "last": "starting", "last_at": util.iso_now()}
     kw = {"creationflags": 0x08000000} if os.name == "nt" else {}       # CREATE_NO_WINDOW
@@ -1150,7 +1279,7 @@ def _engine_run(wd: Path, rd: Path, cfg: dict, n: int, prompt: str, session: str
               error=err, session=ps.get("session"))
     _write_json(rd / "turn.json", tj)
     return {"ok": ok, "error": err, "session": ps.get("session"), "text": ps.get("text") or "", "exit": rc,
-            "elapsed_s": tj["elapsed_s"]}
+            "elapsed_s": tj["elapsed_s"], "effort": effort}
 
 
 def _turn(wd: Path, rd: Path, cfg: dict, n: int, msgs: list[dict], prev_err: dict | None,
@@ -1159,7 +1288,20 @@ def _turn(wd: Path, rd: Path, cfg: dict, n: int, msgs: list[dict], prev_err: dic
     res = _engine_run(wd, rd, cfg, n, prompt, session, msgs)
     if not res["ok"] and session and NO_SESSION_RE.search(str(res.get("error") or "")):
         _log(rd, f"turn {n}: the saved session {session} is gone; starting a new session")
+        session = None
         res = _engine_run(wd, rd, cfg, n, prompt, None, msgs, attempt=2)
+    lv = res.get("effort")
+    if (not res["ok"] and lv and float(res.get("elapsed_s") or 0) < EFFORT_FAST_S
+            and EFFORT_RE.search(str(res.get("error") or ""))):
+        eng = cfg["engine"]                             # the engine (or its model) does not take this level
+        _log(rd, f"turn {n}: {eng} did not take effort {lv} ({str(res.get('error'))[:160]}); running at its own "
+                 "default; `slop relay effort` picks another level")
+        with _lock(rd):
+            data = _read_json(rd / "effort.json")
+            data.setdefault("rejected", {})[eng] = lv
+            data.setdefault("rejected_why", {})[eng] = str(res.get("error") or "")[:300]
+            _write_json(rd / "effort.json", data)
+        res = _engine_run(wd, rd, cfg, n, prompt, session, msgs, attempt=3, effort=None)
     return res
 
 
@@ -1315,6 +1457,9 @@ def register(sub) -> None:
     p.add_argument("--exclude", help="suno: the Exclude styles field")
     p.add_argument("--instrumental", action="store_true", help="suno: an instrumental (no lyrics)")
     p.add_argument("--url", help="browser: the page to start on")
+    p.add_argument("--personalize", choices=["on", "off"],
+                   help="midjourney: Grok switches the person's personalization on with the P button (default: the "
+                        "project's mj.personalize, else on); a profile code never goes into a prompt")
     p.add_argument("--expect", action="append", help="person: where their upload is saved (repeatable)")
     p.set_defaults(func=cmd_job)
 
@@ -1323,6 +1468,13 @@ def register(sub) -> None:
 
     p = add("status", help="the production's state, engine, session, message counts and open jobs")
     p.set_defaults(func=cmd_status)
+
+    p = add("effort", help="how hard the production thinks, per engine (Claude Code --effort, Codex reasoning "
+                           "effort): show the levels, or set one for the next turns")
+    p.add_argument("level", nargs="?", help="a level the engine offers (shown without one), default (xhigh) or auto "
+                                            "(the engine decides)")
+    p.add_argument("--engine", help="claude | codex (default: the engine the relay runs)")
+    p.set_defaults(func=cmd_effort)
 
     p = add("stop", help="stop the running production turn (waiting messages stay)")
     p.add_argument("--grace", type=float, default=10.0, help="seconds between SIGTERM and SIGKILL (default 10)")

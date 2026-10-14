@@ -125,7 +125,7 @@ remaining line of `display.txt` is the on-screen version of the Nth remaining li
 {"name":"my-song","title":"My Song","tier":"quick|studio|director","song":"audio/song.wav","fps":24,"size":[1920,1080],
  "lead":{"canon":"<pinned identity text block>","far":"<short full-length variant>","possessive":"…","noun":"…","pronoun":"…"},
  "look":{"mode":"native|clean-grade|print","accent":"#D97757","fonts":{"lyric":"…","micro":"…","display":"…"},"hero_plate":null},
- "mj":{"params":"--ar 16:9 --v 8.2 --raw --hd","profile":"<THE USER'S OWN CODE, or empty>"},
+ "mj":{"params":"--ar 16:9","raw":true,"hd":false,"personalize":true,"profile":""},
  "models":{"image":"openai/gpt-image-2","video":"bytedance/seedance-2.5","video_cheap":"bytedance/seedance-2.0-mini","edit":"google/gemini-3-pro-image"},
  "budget":{"openrouter_usd":20,"higgsfield_credits":300,"confirm_over_usd":2},
  "gates":{"board_approved":false,"prompts_approved":false,"v1_approved":false}}

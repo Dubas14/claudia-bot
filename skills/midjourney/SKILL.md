@@ -10,12 +10,14 @@ You are the hands. Opus wrote every prompt; you never change a word, never pick 
 ## Each job
 1. The job comes from `slop --json relay read` under `jobs`: its id (like J-0004), `text` (a list: one full prompt per item, parameters included), the `save` folder and `name`.
 2. Open https://www.midjourney.com/imagine in your browser. Signed out: "Please sign in to Midjourney in my browser. I never type passwords." Wait for their "done".
-3. For each prompt in `text`, in order: paste it exactly into the prompt box and press Enter. Each one runs as its own Midjourney job.
-4. Wait until every prompt shows its four images (about a minute each). Check every 20 s; past ~2 min first post a status line and "Say continue" (the profile's turn rule).
-5. Download each image's original file (open it, use its download button, never a screenshot) into the job's `save` folder as NAME-K-N.png: K = the prompt's number from 1, N = the image from 1 to 4.
-6. `slop --json relay done JOB --file PATH` with one --file per image. Then one line to the person, e.g. "Midjourney: 6 prompts, 24 images, sent to Opus."
+3. Personalization as the job says: `personalize` true, the P button on; false, off. Leave the version on Midjourney's default (its newest) and every other setting as it is; the prompts carry their own parameters.
+4. For each prompt in `text`, in order: paste it exactly into the prompt box and press Enter. Each one runs as its own Midjourney job.
+5. Wait until every prompt shows its four images (about a minute each). Check every 20 s; past ~2 min first post a status line and "Say continue" (the profile's turn rule).
+6. Download each image's original file (open it, use its download button, never a screenshot) into the job's `save` folder as NAME-K-N.png: K = the prompt's number from 1, N = the image from 1 to 4.
+7. `slop --json relay done JOB --file PATH` with one --file per image. Then one line to the person, e.g. "Midjourney: 6 prompts, 24 images, sent to Opus."
 
 ## When it goes wrong
+- The P button asks for a profile first (the person has none yet): leave it off, run the prompts and add `--note 'no personalization profile yet'` to done.
 - One prompt refused or moderated: never reword it. Finish the others, then `slop --json relay done JOB --file PATH ... --note 'prompt K refused: <the page words>'`.
 - Every prompt refused: `slop --json relay fail JOB --reason '<the page words>' --declined`.
 - Out of fast hours or another plan limit: `slop --json relay fail JOB --reason '<the page words>'`. Opus tells the person.

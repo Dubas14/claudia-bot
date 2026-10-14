@@ -153,10 +153,8 @@ def test_studio_asks_for_the_plans_with_one_exact_command_per_answer():
     assert r["next_item"] == "midjourney"
     st.set_setting("mj-plan", "standard")
     r = rep("studio")
-    assert r["next_item"] == "mj-profile" and item(r, "mj-profile")["need"] == "recommended"
-    assert item(r, "mj-profile")["answers"] == {"none": "slop onboard mark mj-profile --skip"}
-    st.set_mark("mj-profile", "skip")
-    r = rep("studio")
+    mp = item(r, "mj-profile")                     # no code to ask for: personalization is the P button
+    assert mp["state"] == "optional" and "P button" in mp["why"] and not mp.get("ask")
     assert r["next_item"] == "first-project"
     r = rep("studio", projects=[PROJECT])
     assert r["next_item"] == "taste"
@@ -613,7 +611,7 @@ def test_recorded_midjourney_settings_are_offered_to_the_newest_project():
     r = rep("studio", projects=[PROJECT])
     mp, mj = item(r, "mj-profile"), item(r, "midjourney")
     assert "abc123x" not in json.dumps(r) and "ab… (7 characters)" in mp["why"]
-    assert mp["state"] == "todo" and mp["next_cmd"] == "slop --project my-song onboard apply"
+    assert mp["state"] == "done" and mp["next_cmd"] is None and "P button" in mp["why"]
     assert mj["state"] == "todo" and mj["next_cmd"] == "slop --project my-song onboard apply"
     assert "sizes its prompt batches for Standard" in mj["why"] and r["next_item"] == "midjourney"
     r = rep("studio", projects=[{**PROJECT, "mj_profile_set": True, "mj_plan": "pro"}])

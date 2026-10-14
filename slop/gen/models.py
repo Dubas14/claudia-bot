@@ -24,6 +24,7 @@ priced outputs are estimated with a per-resolution (Google) or per-quality (Open
 from __future__ import annotations
 
 import json
+import os
 import math
 import re
 import time
@@ -125,6 +126,57 @@ def find(kind: str, model_id: str, refresh: bool = False, client=None) -> dict |
         if m.get("id") == model_id or m.get("canonical_slug") == model_id:
             return m
     return None
+
+
+VERSIONED = re.compile(r"^(?P<fam>.+?)-?(?P<ver>\d+(?:\.\d+)*)(?P<var>(?:-[a-z][a-z0-9]*)*)$")
+SOFT_TAGS = {"preview", "latest", "exp", "experimental"}       # a newer release may drop or add these
+
+
+def _family(model_id: str) -> tuple[str, tuple[int, ...], tuple[str, ...]] | None:
+    """("bytedance/seedance", (2, 5), ()) for bytedance/seedance-2.5; the variant keeps -mini, -pro, -image ..."""
+    m = VERSIONED.match(model_id or "")
+    if not m:
+        return None
+    var = tuple(t for t in m.group("var").split("-") if t and t not in SOFT_TAGS)
+    return m.group("fam"), tuple(int(x) for x in m.group("ver").split(".")), var
+
+
+LIST_CACHE = {"video": "videos_models", "image": "images_models"}     # kind -> its listing's cache file
+
+
+def latest(model_id: str, kind: str = "video", refresh: bool = False, client=None, offline: bool = False) -> str:
+    """The newest model of model_id's family and variant in OpenRouter's live list (bytedance/seedance-2.5 becomes
+    bytedance/seedance-2.6 the day it is listed; a -mini stays a -mini). Model versions move faster than any doc, so
+    the toolkit never pins one it learned once. SLOP_PIN_MODELS=1, an unversioned id or no list: model_id as given.
+    offline: only the cached list (stale is fine), never the network."""
+    if os.environ.get("SLOP_PIN_MODELS", "").strip() == "1":
+        return model_id
+    want = _family(model_id)
+    if not want:
+        return model_id
+    try:
+        if offline:
+            rows = json.loads(_cache_file(LIST_CACHE.get(kind, "models_all")).read_text(encoding="utf-8"))["data"]
+        else:
+            rows = {"video": video_models, "image": image_models}.get(kind, chat_models)(refresh=refresh,
+                                                                                        client=client)
+    except (SlopError, OSError, ValueError, KeyError, TypeError):
+        return model_id
+    best, best_ver = model_id, want[1]
+    for m in rows or []:
+        mid = m.get("id") or ""
+        got = _family(mid)
+        if got and got[0] == want[0] and got[2] == want[2] and got[1] > best_ver:
+            best, best_ver = mid, got[1]
+    return best
+
+
+def resolve(project: dict | None, slot: str, default: str, kind: str, offline: bool = False) -> str:
+    """The model for a project slot: models.<slot> (or the default), moved to the newest of its family unless the
+    person pinned it (models.pin true, set only when they asked for that exact model)."""
+    m = (project or {}).get("models") or {}
+    mid = m.get(slot) or default
+    return mid if m.get("pin") else latest(mid, kind, offline=offline)
 
 
 def lyria_model(kind: str = "pro", refresh: bool = False, client=None) -> str:
