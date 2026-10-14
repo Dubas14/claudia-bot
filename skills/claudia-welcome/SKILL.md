@@ -1,11 +1,11 @@
 ---
 name: claudia-welcome
-description: Use when the bot opens for the first time after the template import, or the person says hi, help, what are you or what can you do. The welcome - what this bot is, what it makes, its skills, and which subscriptions to get with cheaper alternatives - before any sign-in.
+description: Use when the bot opens for the first time after the template import or install, or the person says hi, help, what are you or what can you do. The welcome - what this bot is, its skills, what each subscription unlocks with cheaper alternatives - then asks whether to set it up fully, before any sign-in.
 ---
 
-# Claudia welcome - the first message
+# Claudia welcome - always the first message
 
-No install, no sign-in, no tool calls in this reply except one silent check: `ls /home/box/sand-data/workflows` must list all 8: claudia-welcome claudia-setup claudia-relay grok-imagine setup-accounts setup-agents setup-gpu claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
+No install, no sign-in and no account question in this reply. One silent check first: `ls /home/box/sand-data/workflows` must list all 8: claudia-welcome claudia-setup claudia-relay grok-imagine setup-accounts setup-agents setup-gpu claudia-toolkit. One missing: recreate it from the template context, else ask for a re-import.
 
 Then send this message as written (prices are monthly and approximate):
 
@@ -27,21 +27,18 @@ Claudia is the open AI popstar from claudia.gallery, the star of ESCAPE VELOCITY
 7. setup-gpu: optional, your own NVIDIA GPU for faster analysis.
 8. claudia-toolkit: repairs, updates, files in and out.
 
-**What to subscribe to** (check current prices)
-| For | Recommended | Cheaper |
-|---|---|---|
-| The work (Opus) | Claude Max, about $100: a music video in a day or two | Claude Pro, about $20: stills, clips, short videos. Or ChatGPT Plus, about $20, with Codex doing the work |
-| Stills and motion | Grok Imagine on your X or SuperGrok plan ($0 extra), plus Midjourney Standard, about $30, for film-grade stills | Grok Imagine only, or Midjourney Basic, about $10 |
-| Songs | Suno Pro, about $10: you need a paid plan to release songs | your own song, or a short generated one (cents) |
-| Singing on camera (lip sync) | Seedance through OpenRouter, pay as you go: about $0.23 a second at 720p, $50-110 for a music video | 480p drafts at about $0.10 a second, Higgsfield credits, or no lip sync |
-| Speed (optional) | a home NVIDIA GPU: saves minutes, not money | nothing: my computer does it all |
+**What each subscription gets you** (check current prices)
+- **Claude Max 20x, about $200 (recommended):** Opus does all the creative work with room to spare: a full music video in a day or two, many stills and clips a week. Cheaper: Max 5x (about $100) for a few videos a month; Pro (about $20) for stills, clips and short videos; ChatGPT Plus (about $20) with Codex if you have no Claude plan (weaker).
+- **Grok Imagine, on your X or SuperGrok plan ($0 extra):** stills and video clips of Claudia straight from grok.com. The free way to get her moving.
+- **Midjourney Standard, about $30:** film-grade stills, the way her four films were made. Cheaper: Basic (about $10), or Grok Imagine only.
+- **Suno Pro, about $10:** her songs; a paid plan is what lets you release them. Cheaper: your own song, or a short generated one (cents).
+- **OpenRouter, pay as you go:** Seedance lip sync, so Claudia sings your song on camera: about $0.23 a second at 720p, $50-110 for a music video. Cheaper: 480p drafts (about $0.10 a second), Higgsfield credits, or no lip sync.
+- **A home NVIDIA GPU (optional):** faster song analysis. It saves minutes, not money.
 
-Just a still or a clip? Claude Pro plus your X plan is enough. Grok usage: I only relay, so even a whole video costs few of my replies.
+Just a still or a clip? Claude plus your X plan is enough. Grok usage: I only relay, so even a whole video costs few of my replies.
 
-Say **set me up** to start, or ask me anything about Claudia first.
-
-## After the message
-One question widget: Set me up now / Just looking / A question first.
-- Set me up now (or "set me up", "setup"): skill claudia-setup, from Reply 1.
-- Just looking: answer questions; a question about Claudia herself: claudia_canon or get_guide once the claudia MCP is connected (skill claudia-setup connects it), else say it is on claudia.gallery. Offer setup once more at the end.
-- A question first: answer it in a few lines, then the same widget again.
+## Then ask, in the same reply
+One question widget "Set me up?": Set up everything (about 10 min) / Just the basics: Claude and X (stills and clips) / Just looking.
+- Set up everything: skill claudia-setup, Reply 1, all accounts.
+- Just the basics: skill claudia-setup, Reply 1, offering only Claude Pro or Max, ChatGPT Plus or Pro and X Premium or SuperGrok.
+- Just looking: answer questions in a few lines; a question about Claudia herself goes to claudia.gallery (claudia_canon once the claudia MCP is connected). Offer "Set me up?" again when they seem ready.

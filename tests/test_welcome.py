@@ -27,21 +27,28 @@ def test_the_welcome_runs_first_and_before_any_sign_in():
 
 
 def test_the_welcome_lists_every_skill_once():
-    tour = WELCOME[WELCOME.index("**My skills**"):WELCOME.index("**What to subscribe to**")]
+    tour = WELCOME[WELCOME.index("**My skills**"):WELCOME.index("**What each subscription gets you**")]
     assert [m for m in re.findall(r"^\d+\. ([a-z-]+):", tour, flags=re.M)] == BR.ORDER
 
 
-def test_the_welcome_names_subscriptions_with_cheaper_alternatives():
-    table = WELCOME[WELCOME.index("**What to subscribe to**"):]
-    assert "| For | Recommended | Cheaper |" in table
-    for must in ("Claude Max", "Claude Pro", "ChatGPT Plus", "Grok Imagine", "Midjourney", "Suno", "Seedance",
+def test_the_welcome_says_what_each_subscription_gets_you_with_cheaper_alternatives():
+    subs = WELCOME[WELCOME.index("**What each subscription gets you**"):WELCOME.index("## Then ask")]
+    assert "**Claude Max 20x, about $200 (recommended):**" in subs and "Max 5x (about $100)" in subs
+    for must in ("Pro (about $20)", "ChatGPT Plus", "Grok Imagine", "Midjourney Standard", "Suno Pro", "Seedance",
                  "OpenRouter", "NVIDIA GPU", "check current prices"):
-        assert must in table, must
+        assert must in subs, must
+    bullets = [ln for ln in subs.splitlines() if ln.startswith("- **")]
+    assert len(bullets) == 6 and all(":**" in b for b in bullets), "each subscription says what it gets you"
+    assert sum("Cheaper:" in b for b in bullets) >= 4
     assert "Nothing is spent without your yes" in WELCOME and "claudia.gallery" in WELCOME
 
 
-def test_the_welcome_hands_over_to_the_setup():
-    assert "skill claudia-setup, from Reply 1" in WELCOME and "Set me up now" in WELCOME
+def test_the_welcome_asks_set_me_up_then_the_setup_asks_have_or_will_get():
+    ask = WELCOME[WELCOME.index("## Then ask"):]
+    assert '"Set me up?"' in ask and "Set up everything" in ask and "Just the basics" in ask and "Just looking" in ask
+    assert "skill claudia-setup, Reply 1" in ask
     setup = read(SKILLS / "claudia-setup" / "SKILL.md")
-    assert "never repeat it" in setup and "Which do you have?" in setup
+    assert '"Which do you have, or are willing to get?"' in setup and "Never repeat the welcome" in setup
+    assert "run skill claudia-welcome now and stop here" in setup, "an install that skipped the welcome gets it first"
+    assert "sign-up page" in setup
     assert "skill claudia-welcome" in read(SKILLS / "profile.md")

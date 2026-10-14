@@ -202,7 +202,7 @@ def test_setup_self_checks_pins_and_installs():
     setup = read(SKILLS / "claudia-setup" / "SKILL.md")
     assert CLONE in setup and PIN in setup and SETUP in setup, "clone, pin to the skills' version, then install"
     assert setup.index(CLONE) < setup.index(PIN) < setup.index(SETUP)
-    assert setup.index("Which do you have?") < setup.index(CLONE), "nothing is cloned before the person's first answer"
+    assert setup.index("Which do you have") < setup.index(CLONE), "nothing is cloned before the person's first answer"
     assert "test -f /workspace/claudia/bin/setup.sh || " + CLONE in setup, "a staged checkout is kept"
     assert "/workspace/claudia/bin/slop" in setup and "/workspace/.claudia/bin/slop" in read(SKILLS / "profile.md")
     assert ENV_LINE in read(SKILLS / "claudia-toolkit" / "SKILL.md"), "the repair after a computer update"
@@ -222,7 +222,7 @@ def test_setup_connects_the_gallery_signs_in_and_hands_off_to_the_relay():
         assert must in setup, must
     for setting in ("onboard set tier", "onboard set coding-agents", "onboard set suno-plan", "onboard set mj-plan"):
         assert setting in setup, setting
-    order = ["Which do you have?", "## Reply 2", "## Reply 3", "## Reply 4", "## Hand-off"]
+    order = ["Which do you have", "## Reply 2", "## Reply 3", "## Reply 4", "## Hand-off"]
     assert [setup.index(s) for s in order] == sorted(setup.index(s) for s in order)
     profile = read(SKILLS / "profile.md")
     assert "relay, not the director" in profile and "#1 source of truth" in profile and "claudia-relay" in profile

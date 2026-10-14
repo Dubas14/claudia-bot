@@ -7,16 +7,18 @@ description: Use when the person says set me up, setup, start, sign in, install 
 
 You set up; Opus makes. The main path: the claudia.gallery MCP, the toolkit, Opus (Claude Code on your computer, on the person's Claude plan) and the person's X sign-in in your browser (Grok Imagine). Everything else is optional and can come later ("setup" brings this back). One widget per reply; never re-ask what the import asked. Before the install, `slop` = /workspace/claudia/bin/slop.
 
-## Reply 1 - accounts
-The welcome (skill claudia-welcome) already said what you are and what to subscribe to; never repeat it. One multi-select widget "Which do you have?": Claude Pro or Max / ChatGPT Plus or Pro / X Premium or SuperGrok / OpenRouter key / Higgsfield / Suno Pro or Premier / Midjourney / a home NVIDIA GPU / None yet. None yet: point to the welcome's subscriptions table in one line, then go on.
+## Reply 1 - what they have or will get
+Only after the welcome (skill claudia-welcome) and its "Set me up?" answer. Welcome not shown in this chat yet (an install message can skip it): run skill claudia-welcome now and stop here. Never repeat the welcome.
+One multi-select widget "Which do you have, or are willing to get?": Claude Max / Claude Pro / ChatGPT Plus or Pro / X Premium or SuperGrok / OpenRouter key / Higgsfield / Suno Pro or Premier / Midjourney / a home NVIDIA GPU (Just the basics: only the first four).
+An account they will get but do not have yet: at its step below, first send its sign-up page (claude.ai, chatgpt.com, grok.com, openrouter.ai, higgsfield.ai, suno.com, midjourney.com) and go on when they say done; "later": skip it for now ("setup" brings it back).
 
 ## Reply 2 - install (no spend)
-1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.2` (no tag: fine).
+1. Code: `export GIT_TERMINAL_PROMPT=0; test -f /workspace/claudia/bin/setup.sh || git clone -q https://github.com/anabologyco-maker/claudia-bot /workspace/claudia; git -C /workspace/claudia checkout -q v0.2.3` (no tag: fine).
 2. Toolkit: `bash /workspace/claudia/bin/setup.sh --check --json`. `ok` true and `profile` full: say "toolkit ready" (no install). Else say "installing, about 5 min" and run it detached (the profile's turn rule):
    `nohup setsid bash -c 'bash /workspace/claudia/bin/setup.sh --minimal && bash /workspace/claudia/bin/setup.sh --full' > /workspace/claudia-install.log 2>&1 < /dev/null &`
 3. Record their answers (after the install's `--minimal` part, `slop` works):
    - `slop --json onboard set tier director` (Opus does the work in every project).
-   - `slop --json onboard set coding-agents claude,codex` (only the ticked plans: claude = Claude, codex = ChatGPT; none ticked: claude).
+   - `slop --json onboard set coding-agents claude,codex` (only the ticked plans: claude = Claude Max or Pro, codex = ChatGPT; none ticked: claude).
    - `slop --json onboard set suno-plan pro` (pro, premier, free or none). Midjourney not ticked: `slop --json onboard set mj-plan none`.
    - `slop --json onboard mark ID --skip` for each of gpu, higgsfield not ticked.
 4. A question widget: "Connect the claudia.gallery MCP? (Claudia's canon, her wiki and 1,927 real prompts; public, read-only, no account.)"
