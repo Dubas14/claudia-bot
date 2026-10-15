@@ -427,6 +427,8 @@ def review(clip_p, ref_p, song_t0, out, audio=None, song=None):
         font = str(p) if p.is_file() else None
     except Exception:
         pass
+    if font:  # filtergraph syntax: forward slashes, and the drive colon escaped (E:\x -> E\:/x on Windows)
+        font = font.replace("\\", "/").replace(":", "\\:")
     ff = (f"fontfile='{font}':" if font else "")
 
     def dt(text, en, fc, bc, y):

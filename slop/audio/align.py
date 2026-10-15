@@ -36,14 +36,35 @@ from .common import Paths, fingerprint, hf_home_default, load_mono, need_module,
 from .pron import SYMBOL_WORDS, num_words, spell_numbers
 
 MODEL_ID = "facebook/wav2vec2-large-960h-lv60-self"
+# Per-language CTC models, picked from the sheet's script (sheet_lang). Apache-2.0 only, like the English one.
+MODELS = {"en": MODEL_ID,
+          "uk": "Yehor/w2v-xls-r-uk"}    # Ukrainian XLS-R 300M CTC, Apache-2.0, ~1.2 GB; lower-case Cyrillic + ' vocab
 FRAME = 0.02                      # 20 ms per CTC frame
-_WORD = re.compile(r"[A-Za-z0-9']+")
+_CYR = "\u0400-\u04FF"
+_LET = f"A-Za-z{_CYR}"
+_HAS_LETTER = re.compile(f"[{_LET}]")
+_WORD = re.compile(f"[{_LET}0-9']+")
 
 
 # ---------------------------------------------------------------- the sheet
 def fold(text: str) -> str:
-    text = text.replace("’", "'").replace("‘", "'").replace("`", "'")
-    return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
+    """Accents off (é -> e, stress marks off) and apostrophes straightened. Cyrillic letters stay whole: NFKD would
+    split й/ї into и/і plus a mark."""
+    text = text.replace("’", "'").replace("‘", "'").replace("`", "'").replace("ʼ", "'")
+    out = []
+    for c in unicodedata.normalize("NFC", text):
+        if "\u0400" <= c <= "\u04FF":
+            out.append(c)
+        else:
+            out.extend(d for d in unicodedata.normalize("NFKD", c) if not unicodedata.combining(d))
+    return "".join(out)
+
+
+def sheet_lang(lines: list[str]) -> str:
+    """'uk' when the sheet's letters are mostly Cyrillic, else 'en'."""
+    txt = fold(" ".join(lines))
+    cyr = len(re.findall(f"[{_CYR}]", txt))
+    return "uk" if cyr and cyr >= len(re.findall(r"[A-Za-z]", txt)) else "en"
 
 
 def read_sheet(path: Path) -> list[str]:
@@ -59,7 +80,7 @@ def split_words(line: str) -> list[str]:
     """The sung words of a line as the aligner counts them (display tokens' n counts these)."""
     out = []
     for w in _WORD.findall(fold(line)):
-        if re.search(r"[A-Za-z]", w):
+        if _HAS_LETTER.search(w):
             out.append(w)
     return out
 
@@ -77,7 +98,7 @@ def lint_sheet(lines: list[str]) -> list[dict]:
     out = []
     for li, ln in enumerate(lines):
         f = fold(ln)
-        if not re.search(r"[A-Za-z]", f):
+        if not _HAS_LETTER.search(f):
             out.append({"line": li, "level": "error", "text": ln,
                         "msg": "line has no letters - the aligner cannot place it; write it as sung",
                         "fix": spell_numbers(f)})
@@ -103,7 +124,7 @@ def lint_sheet(lines: list[str]) -> list[dict]:
 
 
 def _is_shout(line: str) -> bool:
-    letters = re.sub(r"[^A-Za-z]", "", line)
+    letters = re.sub(f"[^{_LET}]", "", line)
     return len(letters) > 8 and letters.upper() == letters
 
 
@@ -123,29 +144,30 @@ def check_sheet(lines: list[str], allow_digits: bool = False) -> list[dict]:
 _MODEL_CACHE: dict = {}
 
 
-def load_model():
-    if "m" not in _MODEL_CACHE:
+def load_model(model_id: str = MODEL_ID):
+    if model_id not in _MODEL_CACHE:
         hf_home_default()
         need_module("torch", "alignment runs wav2vec2 on torch (CPU)")
         need_module("transformers", "alignment uses transformers' Wav2Vec2ForCTC")
         from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
         try:
-            proc = Wav2Vec2Processor.from_pretrained(MODEL_ID)
-            am = Wav2Vec2ForCTC.from_pretrained(MODEL_ID).eval()
+            proc = Wav2Vec2Processor.from_pretrained(model_id)
+            am = Wav2Vec2ForCTC.from_pretrained(model_id).eval()
         except Exception as e:
-            raise SlopError(f"could not load {MODEL_ID} ({type(e).__name__}: {e}). It downloads once (1.26 GB) from "
+            raise SlopError(f"could not load {model_id} ({type(e).__name__}: {e}). It downloads once (~1.3 GB) from "
                             "huggingface.co into $HF_HOME; check the network and disk space, then re-run.")
-        _MODEL_CACHE["m"] = (proc, am)
-    return _MODEL_CACHE["m"]
+        _MODEL_CACHE[model_id] = (proc, am)
+    return _MODEL_CACHE[model_id]
 
 
-def compute_emissions(vocals: Path) -> tuple[np.ndarray, dict]:
+def compute_emissions(vocals: Path, model_id: str = MODEL_ID) -> tuple[np.ndarray, dict]:
     """(E [T, V] log-posteriors at 50 fps, vocab {char: id})."""
-    gpu = _emissions_on_gpu(vocals)        # routing hook (--gpu auto|require): the user's paired home GPU
-    if gpu is not None:
-        return gpu
+    if model_id == MODEL_ID:               # the GPU worker runs the English model only
+        gpu = _emissions_on_gpu(vocals)    # routing hook (--gpu auto|require): the user's paired home GPU
+        if gpu is not None:
+            return gpu
     import torch
-    proc, am = load_model()
+    proc, am = load_model(model_id)
     voc = load_mono(vocals, 16000)
     emis = []
     step = 16000 * 20
@@ -191,28 +213,39 @@ def _emissions_on_gpu(vocals: Path) -> tuple[np.ndarray, dict] | None:
     return E, vocab
 
 
-def emissions(paths: Paths, force: bool = False) -> tuple[np.ndarray, dict, bool]:
+def emissions(paths: Paths, force: bool = False, model_id: str = MODEL_ID) -> tuple[np.ndarray, dict, bool]:
     """Cached emissions for the current vocal stem -> (E, vocab, from_cache)."""
     voc = paths.stem("vocals")
     if not voc.exists():
         raise SlopError("no audio/stems/vocals.wav - run `slop analyze --steps stems` first")
-    key = f"{MODEL_ID}|{fingerprint(voc)}"
+    key = f"{model_id}|{fingerprint(voc)}"
     cp = paths.cache / "w2v.npz"
     meta = read_json(paths.cache / "w2v.json", {}) or {}
     if not force and cp.exists() and meta.get("key") == key:
         with np.load(cp) as z:
             return z["E"], meta["vocab"], True
-    E, vocab = compute_emissions(voc)
+    E, vocab = compute_emissions(voc) if model_id == MODEL_ID else compute_emissions(voc, model_id)
     paths.cache.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(cp, E=E)
-    write_json(paths.cache / "w2v.json", {"key": key, "model": MODEL_ID, "frames": int(len(E)), "vocab": vocab})
+    write_json(paths.cache / "w2v.json", {"key": key, "model": model_id, "frames": int(len(E)), "vocab": vocab})
     return E, vocab, False
 
 
 # ---------------------------------------------------------------- greedy transcript
+def _blank(vocab: dict) -> int:
+    return vocab.get("<pad>", vocab.get("[PAD]", 0))
+
+
+def _model_chars(w: str, vocab: dict) -> str:
+    """A sheet word in the model's alphabet: its case (upper A-Z or lower Cyrillic), the letters and ' it can spell."""
+    wc = fold(w)
+    wc = wc.upper() if "A" in vocab else wc.lower()
+    return "".join(ch for ch in wc if ch in vocab and (ch.isalpha() or ch == "'"))
+
+
 def greedy_transcript(E: np.ndarray, vocab: dict) -> list[dict]:
     inv = {v: k for k, v in vocab.items()}
-    blank = vocab.get("<pad>", 0)
+    blank = _blank(vocab)
     am_ = E.argmax(1)
     tw, cur, t0w, prev = [], "", None, -1
     for t, k in enumerate(am_):
@@ -235,22 +268,21 @@ def greedy_transcript(E: np.ndarray, vocab: dict) -> list[dict]:
 # ---------------------------------------------------------------- CTC Viterbi (own, no compiled aligner)
 def viterbi_align(E: np.ndarray, vocab: dict, lines: list[str]) -> list[dict]:
     """-> [{w, line, t0, t1, score}] (t0/t1 None when a word owns no frame)."""
-    blank = vocab.get("<pad>", 0)
+    blank = _blank(vocab)
     space = vocab.get("|")
     words, toks, owner = [], [], []
     for li, ln in enumerate(lines):
         for w in split_words(ln):
-            wc = re.sub(r"[^A-Z']", "", fold(w).upper())
-            if not re.search("[A-Z]", wc):
+            wc = _model_chars(w, vocab)
+            if not any(ch.isalpha() for ch in wc):
                 continue
             if toks and space is not None:
                 toks.append(space)
                 owner.append(-1)
             words.append({"w": w, "line": li})
             for ch in wc:
-                if ch in vocab:
-                    toks.append(vocab[ch])
-                    owner.append(len(words) - 1)
+                toks.append(vocab[ch])
+                owner.append(len(words) - 1)
     T = len(E)
     if not words:
         raise SlopError("the lyric sheet has no words to align: write the sung lyrics in lyrics/lyrics.txt (one line per "
@@ -308,8 +340,9 @@ def viterbi_align(E: np.ndarray, vocab: dict, lines: list[str]) -> list[dict]:
 
 
 def align(paths: Paths, lines: list[str], force: bool = False) -> dict:
+    model_id = MODELS[sheet_lang(lines)]
     t = time.monotonic()
-    E, vocab, cached = emissions(paths, force=force)
+    E, vocab, cached = emissions(paths, force=force, model_id=model_id)
     t_em = time.monotonic() - t
     tw = greedy_transcript(E, vocab)
     write_json(paths.analysis / "transcript.json", tw)
@@ -318,6 +351,6 @@ def align(paths: Paths, lines: list[str], force: bool = False) -> dict:
     t_vit = time.monotonic() - t
     write_json(paths.cache / "words-w2v.json", {"lines": lines, "words": words})
     sc = [w["score"] for w in words]
-    return {"words": words, "transcript_words": len(tw), "emissions_s": round(t_em, 2), "emissions_cached": cached,
+    return {"words": words, "model": model_id, "transcript_words": len(tw), "emissions_s": round(t_em, 2), "emissions_cached": cached,
             "viterbi_s": round(t_vit, 2), "mean_conf": round(float(np.mean(sc)), 3) if sc else 0.0,
             "conf_ge_05": round(float(np.mean([s >= 0.5 for s in sc])), 3) if sc else 0.0}

@@ -103,7 +103,7 @@ def build_lyr(pdir: Path, W: dict) -> tuple[list[dict], list[str]]:
             res = []
             for txt, n in _tokens(spec):
                 if n is None:
-                    n = 1 if re.search(r"[A-Za-z0-9]", txt) else 0
+                    n = 1 if re.search(r"[A-Za-z0-9\u0400-\u04FF]", txt) else 0
                 grp = ws[k:k + n]
                 k += n
                 st = "strike" if txt.startswith("~") else "accent" if txt.startswith("*") else "mono" if txt.startswith("_") else ""

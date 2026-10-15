@@ -68,7 +68,7 @@ def ear_check(words: dict | None, sheet: list[str] | None, R: np.ndarray | None 
     items: list[dict] = []
     import re
     for li, ln in enumerate(sheet or []):
-        if not re.search(r"[A-Za-z]", ln):
+        if not re.search(r"[A-Za-z\u0400-\u04FF]", ln):
             items.append({"kind": "letters", "line": li, "t0": None, "t1": None,
                           "msg": f"line {li + 1} \"{ln}\" has no letters: write it as sung in lyrics/lyrics.txt"})
     if not words:

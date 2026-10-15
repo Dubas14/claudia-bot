@@ -97,7 +97,7 @@ def _fold_map(line: str) -> tuple[str, list[int]]:
 def _word_spans(line: str) -> list[tuple[int, int]]:
     """(start, end) in fold(line) of each sung word, as align.split_words counts them."""
     f = fold(line)
-    return [(m.start(), m.end()) for m in re.finditer(r"[A-Za-z0-9']+", f) if re.search(r"[A-Za-z]", m.group())]
+    return [(m.start(), m.end()) for m in re.finditer(r"[A-Za-z0-9\u0400-\u04FF']+", f) if re.search(r"[A-Za-z\u0400-\u04FF]", m.group())]
 
 
 def rebuild_line(line: str, ops: dict[int, list[str] | None], inserts: dict[int, list[str]]) -> str:
@@ -135,7 +135,7 @@ def rebuild_line(line: str, ops: dict[int, list[str] | None], inserts: dict[int,
 
 
 def _shout(line: str) -> bool:
-    letters = re.sub(r"[^A-Za-z]", "", line)
+    letters = re.sub(r"[^A-Za-z\u0400-\u04FF]", "", line)
     return len(letters) >= 4 and letters.upper() == letters
 
 

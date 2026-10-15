@@ -234,6 +234,10 @@ def transcribe(pdir: Path, windows: list[tuple[float, float]] | None = None, mod
     if windows is None:
         windows = plan_windows(vocal_env(voc))
     windows = [(round(float(a), 2), round(float(b), 2)) for a, b in windows]
+    lang = "en"
+    if paths.lyrics.exists():                  # the sheet's script picks the language, as it picks the aligner
+        from .align import read_sheet, sheet_lang
+        lang = sheet_lang(read_sheet(paths.lyrics))
     fp = fingerprint(voc)
     cp = cache_path(paths, model)
     cache = read_json(cp, {}) or {}
@@ -251,7 +255,7 @@ def transcribe(pdir: Path, windows: list[tuple[float, float]] | None = None, mod
         post = post or _post
         for a, b in todo:
             k = windows.index((a, b))
-            payload = {"model": model, "input_audio": {"data": _wav_b64(voc, a, b), "format": "wav"}, "language": "en",
+            payload = {"model": model, "input_audio": {"data": _wav_b64(voc, a, b), "format": "wav"}, "language": lang,
                        "response_format": "verbose_json", "timestamp_granularities": ["word"]}
             try:
                 d = post(payload, key_env)

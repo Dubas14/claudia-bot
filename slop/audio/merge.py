@@ -29,7 +29,7 @@ CONF_MIN = 0.5
 
 
 def norm(s: str) -> str:
-    return re.sub(r"[^a-z]", "", fold(s).lower())
+    return re.sub(r"[^a-zЀ-ӿ]", "", fold(s).lower())
 
 
 def whisper_tokens(wh: list[dict], sheet_norms: list[str], extra_map: dict | None = None) -> list[dict]:

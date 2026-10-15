@@ -105,7 +105,7 @@ def run_align(pdir: Path, paths: Paths, lines: list[str], force: bool, whisper_m
     previous = read_json(paths.words)
     W = mg.merge(w2v, lines, whisper_words, R, cfg.get("whisper_map"), previous, conf_min)
     W["source"] = "align-v1"
-    W["model"] = al.MODEL_ID
+    W["model"] = res.get("model", al.MODEL_ID)
     if wres:
         W["whisper"] = {"model": wres["model"], "windows": wres["windows"], "cost_usd": wres["cost_usd"],
                         "paid_this_run": wres["cost_paid_now"], "cached": wres["cached"], "words": len(wres["words"])}

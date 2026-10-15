@@ -43,7 +43,7 @@ def tokens(spec: str) -> list[list]:
 
 
 def consumed(spec: str) -> int:
-    return sum((n if n is not None else (1 if re.search(r"[A-Za-z0-9]", txt) else 0)) for txt, n in tokens(spec))
+    return sum((n if n is not None else (1 if re.search(r"[A-Za-z0-9\u0400-\u04FF]", txt) else 0)) for txt, n in tokens(spec))
 
 
 def starter_line(sung: str) -> str:
@@ -120,7 +120,7 @@ def build_lyr(words: list[dict], display: list[str], adlibs: list[dict] | None =
         k, res = 0, []
         for txt, n in tokens(spec):
             if n is None:
-                n = 1 if re.search(r"[A-Za-z0-9]", txt) else 0
+                n = 1 if re.search(r"[A-Za-z0-9\u0400-\u04FF]", txt) else 0
             grp = ws[k:k + n]
             k += n
             st = "strike" if txt.startswith("~") else "accent" if txt.startswith("*") else "mono" if txt.startswith("_") else ""
